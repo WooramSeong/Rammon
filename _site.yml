@@ -13,7 +13,7 @@ navbar:
     - text: "My Info"
       href: about.html
     - text: "Portfolio"
-      href: Portfolio.html
+      href: portfolio.html
     - text: "Publish"
       menu:
         - text: "Publishing Articles"
