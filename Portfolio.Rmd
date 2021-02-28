@@ -1,4 +1,6 @@
-
+---
+title: "Rammon's Portfolio"
+---
 ## Bermuda Option 
 
 *Case <- 100 시나리오 갯수*\
@@ -264,7 +266,6 @@ legend(114,49,c("European","Bermuda"),col=c("black","red"),lty=1,cex=0.9)
 *Period = N*\
 
 ```{r setup2, include=TRUE}
-install.packages("dplyr")
 library("dplyr")
 
 NPVRAM <-function(I,CF,G,T,C,N) {
