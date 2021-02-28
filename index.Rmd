@@ -2,7 +2,11 @@
 title: "Rammon's Github"
 description: 
   Welcome to my website. I hope you enjoy it!
-site: distill::distill_website
+  
+  
+  
+  
+site: distill::distill_blog
 ---
 
 ```{r setup, include=FALSE}
