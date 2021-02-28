@@ -1,7 +1,7 @@
 ---
 name: "Wooram Seong"
 title: "Homepage"
-output_dir: "https://wooramseong.github.io/Rammon/"
+output_dir: "docs"
 navbar:
   logo:
     image: 여흥이.png
@@ -10,9 +10,9 @@ navbar:
   right:
     - text: "Home"
       href: index.html
-    - text: "About"
+    - text: "My Info"
       href: about.html
-    - text: "Citations"
+    - text: "Portfolio"
       href: citations.html
     - text: "Publish"
       menu:
