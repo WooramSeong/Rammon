@@ -1,5 +1,6 @@
 # Rammon
 Hello, I'm SKKU student for studying master degree
+why fucking am i wrong?
 It's practice 
 
   git config --global user.email "you@example.com"
