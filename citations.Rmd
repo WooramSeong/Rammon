@@ -1,0 +1,341 @@
+---
+title: "Rammon's Portfolio"
+---
+## Bermuda Option 
+
+*Case <- 100 시나리오 갯수*\
+*Ini.Stock<-100 초기 주가*\
+*StrikePrice<-100  옵션 행사 가격*\
+*year<- 10  년도*\
+*unit<- 12  단위 (12: 12개월, 365, 365일)*\
+*interval <- year X unit (구간의 갯수)*\
+*t <- 1/unit  년도를 구간으로 나눠준 수*\ 
+*r <-0.03*\
+*sigma<-0.2*\
+*mu <- r-0.5 X sigma^2*\
+*Bermuda.Start <- 50*\
+*Bermuda.End  <- 110  버뮤다의 마지막 구간은 interval과 같거나 작아야함.* 
+
+
+```{r setup, include=TRUE}
+
+Bermuda_option <-function(CallorPut,Case,Ini.Stock,StrikePrice,year,unit,r,sigma,Bermuda.Start,Bermuda.End){
+  interval <- year * unit
+  t <- 1/unit
+  mu <- r-0.5*sigma^2
+  
+  set.seed(5)
+  
+  rnd.num <- as.data.frame(matrix(rnorm(Case*interval), nrow = Case, ncol=interval))
+  
+  Yield.table <- as.data.frame(matrix(data = 0, nrow = Case, ncol = interval+1))
+  Payoff.table <- as.data.frame(matrix(data = 0, nrow = Case, ncol = interval))
+  Bermuda.table <- as.data.frame(matrix(data = 0, nrow = Case, ncol = 1))
+  
+  if (CallorPut == 1){  
+    for (i in 1:Case) {
+      for (j in 1:interval) {
+        
+        Yield.table[i,j+1] <-  Yield.table[i,j] + (mu*t+(sigma*sqrt(t)*rnd.num[i,j]))
+        Payoff.table[i,j]  <-  exp(-r*j/unit)*max(0,Ini.Stock*exp(Yield.table[i,j+1])-StrikePrice)  
+      }}} else if (CallorPut == 2){
+        for (i in 1:Case) {
+          for (j in 1:interval) {
+            
+            Yield.table[i,j+1] <-  Yield.table[i,j] + (mu*t+(sigma*sqrt(t)*rnd.num[i,j]))
+            Payoff.table[i,j]  <-  exp(-r*j/unit)*max(0,StrikePrice-Ini.Stock*exp(Yield.table[i,j+1]))  
+          }}} else { print("Call =1 , Put =2 로 설정해주셔야 합니다.")
+          }
+  
+  
+  
+  if (Bermuda.End>0 & Bermuda.End<=interval){
+    for (i in 1:Case) { 
+      Bermuda.table[i,1]<-max(Payoff.table[i,Bermuda.Start:Bermuda.End],Payoff.table[i,interval])
+      
+    }  
+    value<-mean(Bermuda.table[,1])
+  }  else {value<-mean(Payoff.table[,interval])
+  }
+  
+  
+  return(value)
+}
+
+
+
+
+
+Bermuda_callop <-function(Case,Ini.Stock,StrikePrice,year,unit,r,sigma,Bermuda.Start,Bermuda.End){
+  interval <- year * unit
+  t <- 1/unit
+  mu <- r-0.5*sigma^2
+  
+set.seed(5)
+
+rnd.num <- as.data.frame(matrix(rnorm(Case*interval), nrow = Case, ncol=interval))
+
+Yield.table <- as.data.frame(matrix(data = 0, nrow = Case, ncol = interval+1))
+Payoff.table <- as.data.frame(matrix(data = 0, nrow = Case, ncol = interval))
+Bermuda.table <- as.data.frame(matrix(data = 0, nrow = Case, ncol = 1))
+
+if (Bermuda.End>0 & Bermuda.End<=interval){
+  for (i in 1:Case) {
+    for (j in 1:interval) {
+      
+      Yield.table[i,j+1] <-  Yield.table[i,j] + (mu*t+(sigma*sqrt(t)*rnd.num[i,j]))
+      Payoff.table[i,j]  <-  exp(-r*j/unit)*max(0,Ini.Stock*exp(Yield.table[i,j+1])-StrikePrice)  
+    }
+    Bermuda.table[i,1]<-max(Payoff.table[i,Bermuda.Start:Bermuda.End],Payoff.table[i,interval])} 
+  value<-mean(Bermuda.table[,1])
+} else {
+  for (i in 1:Case) {
+    for (j in 1:interval) {
+      
+      Yield.table[i,j+1] <-  Yield.table[i,j] + (mu*t+(sigma*sqrt(t)*rnd.num[i,j]))
+      Payoff.table[i,j]  <-  exp(-r*j/unit)*max(0,Ini.Stock*exp(Yield.table[i,j+1])-StrikePrice)  
+    }}
+  value<-mean(Payoff.table[,interval])
+}
+
+
+return(value)
+}
+
+Bermuda_putop <-function(Case,Ini.Stock,StrikePrice,year,unit,r,sigma,Bermuda.Start,Bermuda.End){
+  interval <- year * unit
+  t <- 1/unit
+  mu <- r-0.5*sigma^2
+  
+  set.seed(5)
+  
+  rnd.num <- as.data.frame(matrix(rnorm(Case*interval), nrow = Case, ncol=interval))
+  
+  Yield.table <- as.data.frame(matrix(data = 0, nrow = Case, ncol = interval+1))
+  Payoff.table <- as.data.frame(matrix(data = 0, nrow = Case, ncol = interval))
+  Bermuda.table <- as.data.frame(matrix(data = 0, nrow = Case, ncol = 1))
+  
+  if (Bermuda.End>0 & Bermuda.End<=interval){
+    for (i in 1:Case) {
+      for (j in 1:interval) {
+        
+        Yield.table[i,j+1] <-  Yield.table[i,j] + (mu*t+(sigma*sqrt(t)*rnd.num[i,j]))
+        Payoff.table[i,j]  <-  exp(-r*j/unit)*max(0,StrikePrice-Ini.Stock*exp(Yield.table[i,j+1]))  
+      }
+      Bermuda.table[i,1]<-max(Payoff.table[i,Bermuda.Start:Bermuda.End],Payoff.table[i,interval])} 
+    value<-mean(Bermuda.table[,1])
+  } else {
+    for (i in 1:Case) {
+      for (j in 1:interval) {
+        
+        Yield.table[i,j+1] <-  Yield.table[i,j] + (mu*t+(sigma*sqrt(t)*rnd.num[i,j]))
+        Payoff.table[i,j]  <-  exp(-r*j/unit)*max(0,StrikePrice-Ini.Stock*exp(Yield.table[i,j+1]))  
+      }}
+    value<-mean(Payoff.table[,interval])
+  }
+  
+  
+  return(value)
+}
+
+
+European_callop <-function(Case,Ini.Stock,StrikePrice,year,unit,r,sigma){
+
+  
+  interval <- year * unit
+  t <- year/interval
+  mu <- r-0.5*sigma^2
+  set.seed(5)
+  #시뮬레이션 난수 값을 고정시키려면 set.seed(10) <10은 page와 같음> 10페이지에 있는 난수값. 
+  
+  rnd.num <- as.data.frame(matrix(rnorm(Case*interval), nrow = Case, ncol=interval))
+  
+  Yield.table <- as.data.frame(matrix(data = 0, nrow = Case, ncol = interval+1))
+  Payoff.table <- as.data.frame(matrix(data = 0, nrow = Case, ncol = interval))
+  European.table <- as.data.frame(matrix(data = 0, nrow = Case, ncol = 1))
+  
+  for (i in 1:Case) {
+    for (j in 1:interval) {
+      
+      Yield.table[i,j+1] <-  Yield.table[i,j] + (mu*t+(sigma*sqrt(t)*rnd.num[i,j]))
+      Payoff.table[i,j]  <-  exp(-r*j/unit)*max(0,Ini.Stock*exp(Yield.table[i,j+1])-StrikePrice)  
+    }
+    European.table[i,1]<-Payoff.table[i,interval]
+  }
+  
+  value<-mean(European.table[,1])
+  
+  return(value)
+}
+
+European_putop <-function(Case,Ini.Stock,StrikePrice,year,unit,r,sigma){
+  
+  
+  interval <- year * unit
+  t <- year/interval
+  mu <- r-0.5*sigma^2
+  set.seed(5)
+  #시뮬레이션 난수 값을 고정시키려면 set.seed(10) <10은 page와 같음> 10페이지에 있는 난수값. 
+  
+  rnd.num <- as.data.frame(matrix(rnorm(Case*interval), nrow = Case, ncol=interval))
+  
+  Yield.table <- as.data.frame(matrix(data = 0, nrow = Case, ncol = interval+1))
+  Payoff.table <- as.data.frame(matrix(data = 0, nrow = Case, ncol = interval))
+  European.table <- as.data.frame(matrix(data = 0, nrow = Case, ncol = 1))
+  
+  for (i in 1:Case) {
+    for (j in 1:interval) {
+      
+      Yield.table[i,j+1] <-  Yield.table[i,j] + (mu*t+(sigma*sqrt(t)*rnd.num[i,j]))
+      Payoff.table[i,j]  <-  exp(-r*j/unit)*max(0,StrikePrice-Ini.Stock*exp(Yield.table[i,j+1]))  
+    }
+    European.table[i,1]<-Payoff.table[i,interval]
+  }
+  
+  value<-mean(European.table[,1])
+  
+  return(value)
+}
+
+Bermuda_option(3,100,100,100,5,12,0.01,0.1,0,0)
+Bermuda_option(2,100,100,100,5,12,0.02,0.1,0,0)
+Bermuda_option(1,100,100,80,5,12,0.03,0.1,0,0)
+Bermuda_callop(100,100,80,5,12,0.02,0.2,20,40)
+Bermuda_putop(100,100,100,5,12,0.01,0.1,0,0)
+European_callop(100,100,100,5,12,0.01,0.1)
+European_putop(100,100,100,5,12,0.01,0.1)
+
+
+
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+If you want to get the plots about bermuda options,
+Write this down.
+
+result.table.r<-c(1:100)
+result.table.sigma<-c(1:100)
+result.table.StrikePrice<-c(1:100)
+result.table.r2<-c(1:100)
+result.table.sigma2<-c(1:100)
+result.table.StrikePrice2<-c(1:100)
+sample.r<- seq(0.01,0.03,length.out = 100)
+sample.sigma<-seq(0.1,0.3,length.out = 100)
+sample.StrikePrice<-seq(80,120,length.out = 100)
+
+for (i in 1:100) {
+  result.table.r[i]<-Bermuda_option(1,100,100,100,5,12,sample.r[i],0.2,20,40)
+  result.table.sigma[i]<-Bermuda_option(1,100,100,100,5,12,0.02,sample.sigma[i],20,40)
+  result.table.StrikePrice[i]<-Bermuda_option(1,100,100,sample.StrikePrice[i],5,12,0.02,0.2,20,40)
+  result.table.r2[i]<-Bermuda_option(1,100,100,100,5,12,sample.r[i],0.2,0,0)
+  result.table.sigma2[i]<-Bermuda_option(1,100,100,100,5,12,0.02,sample.sigma[i],0,0)
+  result.table.StrikePrice2[i]<-Bermuda_option(1,100,100,sample.StrikePrice[i],5,12,0.02,0.2,0,0)
+  
+  }
+
+plot(sample.r,result.table.r,type = "l",col="red",xlab = "무위험이자율",ylab="콜옵션 가격",xlim=c(0.009,0.031),ylim=c(10,50))
+lines(sample.r,result.table.r2,type = "l")
+legend(0.026,48,c("European","Bermuda"),col=c("black","red"),lty=1,cex=0.9)
+
+plot(sample.sigma,result.table.sigma,type = "l",col="red",xlab = "표준편차(시그마)",ylab="콜옵션 가격",xlim=c(0.05,0.40),ylim=c(10,50))
+lines(sample.sigma,result.table.sigma2,type = "l")
+legend(0.32,49,c("European","Bermuda"),col=c("black","red"),lty=1,cex=0.9)
+
+plot(sample.StrikePrice,result.table.StrikePrice,type = "l",col="red",xlab = "행사가격",ylab="콜옵션 가격",xlim=c(75,125),ylim=c(10,50))
+lines(sample.StrikePrice,result.table.StrikePrice2)
+legend(114,49,c("European","Bermuda"),col=c("black","red"),lty=1,cex=0.9)
+
+
+
+
+
+
+
+
+
+
+
+
+
+## NPV Function with Tax (Monte carlo Simulation)
+*Initial Investment = I*\
+*CASHFLOW before tax = CF*\
+*Growth rate = G*\
+*Tax rate = T*
+*Cost of Captial = C*\
+*Period = N*\
+
+```{r setup2, include=TRUE}
+library("dplyr")
+
+NPVRAM <-function(I,CF,G,T,C,N) {
+  PVCF = 0 
+  ACF= CF*(1-T)  ##After tax cash flow
+  for(i in 1:N){
+    PVCF[i]<-ACF*(1+G)^(i-1) / (1+C)^i 
+  }
+  
+  sum(PVCF)-I}
+
+### Monte Function ###
+  
+Monte <- function(PROB,RV) {if(PROB<=0.25){
+    return(RV[1])}
+    else if(PROB<=0.75) {
+      return(RV[2])
+    }
+    else  { 
+      return(RV[3])
+    }}      
+
+  
+
+NPVRAM(5000000,1000000,0.03,0.25,0.06,10)
+
+A<-c(5500000,5000000,4500000)
+B<-c(900000,1000000,1100000)
+C<-c(0.02,0.03,0.04)
+D<-c(0.35,0.25,0.15)
+E<-c(0.07,0.06,0.05)
+F<-c(8,10,12)
+
+
+Result<-0
+
+
+### NPVMONTE function ###
+
+
+NPVMONTE <- function(x) {
+          
+                            NPV1<-c(1:x)  
+            for(i in 1:x){
+                       
+                         I1<-Monte(runif(1),A)
+                         CF1<-Monte(runif(1),B)
+                         G1<-Monte(runif(1),C)
+                         T1<-Monte(runif(1),D)
+                         C1<-Monte(runif(1),E)
+                         N1<-Monte(runif(1),F)
+      NPV1[i] <- NPVRAM(I1,CF1,G1,T1,C1,N1)                   
+      }
+ return(NPV1) 
+}
+
+Result1<-NPVMONTE(10000)
+mean(Result1)  ## NPV ???հ?
+var(Result1)   ## NPV var ??
+Result1<-as.data.frame(Result1)
+colnames(Result1) <- "NPV"
+Result1<-arrange(Result1,NPV)
+Positive<- filter(Result1,NPV>0)  
+nrow(Positive)/nrow(Result1)     ## NPV ?? ?????? Ȯ?? ##
+AM<- filter(Result1,NPV>1000000) ## Above  1Million
+BM<- filter(Result1,NPV<1000000) ## Below  1Million
+nrow(AM)/nrow(Result1)   ## NPV 1,000,000 ?ʰ??? Ȯ??
+nrow(BM)/nrow(Result1)   ## NPV 1,000,000 ?̸??? Ȯ??
+Result1[100,1]   ## 1  percentile ##
+Result1[1000,1]  ## 10 percentile ##
+Result1[9000,1]  ## 90 percentile ##
+
+

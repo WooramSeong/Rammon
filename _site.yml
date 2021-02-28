@@ -22,7 +22,7 @@ navbar:
           href: publish_website.html
         - text: "---"
         - text: "Article Metadata"
-          href: metadata.html
+          href: citations.html
     - icon: fab fa-github
       href: https://github.com/WooramSeong
     - icon: fab fa-instagram
