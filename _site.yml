@@ -1,7 +1,7 @@
-name: "."
-title: "iyo-distill"
+name: "Wooram Seong"
+title: "INFO"
 description: |
-  iyo-distill
+  Rammon's Website
 output_dir: "docs"
 navbar:
   right:
