@@ -14,7 +14,8 @@ install.packages("postcards")
   
 library(postcards)
 create_postcard()
-NooNoNo
-
+packageVersion("postcards")
+  
+usethis::use_github_pages(branch = "main", path = "/")
   
   

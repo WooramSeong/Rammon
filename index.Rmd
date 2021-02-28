@@ -1,0 +1,29 @@
+---
+title: "Wooram Seong(성우람)"
+image: "Profilegithub.jpg"
+links:
+  - label: Naver
+    url: "https://blog.naver.com/rapidoworam"
+  - label: Instagram
+    url: "https://www.instagram.com/wooram_mon/"
+  - label: GitHub
+    url: "https://github.com/"
+  - label: Email
+    url: "rapidoworam@naver.com"
+output:
+  postcards::trestles
+---
+
+# Self-Introduction
+
+I am an actuarial student studying at Sungkyunkwan University from Korea.I’m in the second year on the way to a master's degree. \
+I love talking about **HipHop, Jazz, and DJing**.
+
+# Education
+Daejeon High School / 2009~2011 \
+Sungkyunkwan University / 2013~2019  \
+SGH Warsaw school of Economics / 2018 (Exchange Student) \
+Sungkyunkwan graduate school / 2020~
+
+# I'm Traveler
+Taiwan, China, Japan, Thailand, Indonesia, Vietnam, Spain, France, Italy, IBIZA(?_?), Poland, United Kingdom, Czech, Austria, Croatia, Hungary, Egypt
