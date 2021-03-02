@@ -14,15 +14,14 @@ navbar:
       href: about.html
     - text: "Portfolio"
       href: portfolio.html
-    - text: "Publish"
+    - text: "Study Note"
       menu:
-        - text: "Publishing Articles"
-          href: publish_article.html
-        - text: "Publishing a Website"
-          href: publish_website.html
-        - text: "---"
-        - text: "Article Metadata"
-          href: citations.html
+        - text: "Linear Regression"
+          href: LR.html
+        - text: "Non parametric method"
+          href: NPM.html
+        - text: "Time series"
+          href: TS.html
     - icon: fab fa-github
       href: https://github.com/WooramSeong
     - icon: fab fa-instagram
