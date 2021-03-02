@@ -6,7 +6,7 @@ description:
   
   
   
-site: distill::distill_blog
+site: distill::distill_website
 ---
 
 ```{r setup, include=FALSE}
