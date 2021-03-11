@@ -1,4 +1,252 @@
 ---
-title: "Linear Regression"
+title: "Data Analysis(AmesHosuing)"
 ---
-None
+
+
+# 필요 라이브러리 모음 
+```{r library, include=TRUE}
+library("AmesHousing")
+library("tidyverse")
+library("rmarkdown")
+```
+
+```{r file, include=FALSE}
+AmesHousing::ames_raw
+```
+
+
+# Insight 1 
+**NorthRidge, NorthRigde Heights 동네는 서울의 성북동과 같이 소수의 부자들이 살고 있는 곳으로 보인다.**
+
+```{r content1, include=TRUE, echo=FALSE}
+
+ggplot(ames_raw, aes(x = SalePrice)) + 
+  geom_histogram(bins = 400)
+
+Table_SP<-ames_raw %>% select(Neighborhood,SalePrice, `Overall Qual`) %>%  group_by(Neighborhood) %>% 
+  mutate(SalePrice_mean = mean(SalePrice, na.rm = TRUE)) %>% 
+  filter(SalePrice_mean>=200000) %>% arrange(desc(SalePrice_mean)) 
+```
+<center>**<표1> 전체 집의 판매가격 분포**</center> 
+\
+\
+<div style="text-align: left"> 지역별 집의 평균 판매가격은 다음과 같다. </div>
+\
+\
+```{r content2, include=TRUE, echo=FALSE}
+Table_SP %>% group_by(Neighborhood) %>% 
+  summarize(SalePrice_mean = mean(SalePrice)) %>% 
+  filter(SalePrice_mean>=200000) %>% arrange(desc(SalePrice_mean))
+```
+\
+다음은 1~10위 평균 판매가격을 가진 지역들의 Boxplot이다.
+\
+
+```{r content3, include=TRUE, echo=FALSE}
+ggplot(Table_SP, aes(x = Neighborhood, y = SalePrice, fill=Neighborhood)) + geom_boxplot(alpha=0.5,show.legend = TRUE) +
+  theme(legend.position="none") + stat_summary(geom='point',fun=mean,shape=23,size=3)
+```
+<center>**<표2> 상위 10개 평균 판매가격 지역의 Boxplot**</center> 
+\
+<div style="text-align: left"></div>
+\
+
+- NorthRidge 동네가 평균 판매가격이 가장 높다. (마름모가 평균을 의미한다.)
+
+- 평균 판매가격이 2위인 Stone Brook보다 중간값은 낮지만 Outlier들로 인해 평균 판매가격을 1위를 하게 됐다.
+
+- NorthRidge Heights도 Outlier가 높은 편에 속한다.
+
+
+# Insight 2 
+**판매가격을 종속변수로 잡고 다른 항목들을 독립변수로 대입해본 결과 Overall Qual 항 목이 제일 연관성이 높았다. (R^2 높게 산출됨.)**
+
+
+Overall Qual 과 Overall Cond 에 대한 *ANOVA* 실행결과 : 
+
+
+```{r content11, include=TRUE, echo=FALSE}
+EXP1 <- lm(SalePrice ~ `Overall Cond`,data = ames_raw)
+EXP2 <- lm(SalePrice ~ `Overall Qual` ,data = ames_raw)
+summary(EXP1)
+summary(EXP2)
+```
+
+- Overall Qual 이 상대적으로 높은 R^2(0.6388)값과 작은 p-value가 산출됨
+
+```{r content12, include=TRUE, echo=FALSE}
+ggplot(ames_raw, aes(x=`Overall Qual`, y=SalePrice ))+ 
+  geom_point()+geom_smooth(method=lm, formula = y ~ x)
+```
+<center>**<표3> Linear Method **</center> 
+\
+\
+<div style="text-align: left">그래프 상으로도 높은 상관관계를 보임 </div>
+(이외에 다양한 변수들에 대하여 실험을 진행해봤으나 Overall Qual이 압도적이다.)
+\
+
+```{r content13, include=TRUE, echo=FALSE}
+
+ames_raw %>% select(Neighborhood, `Overall Qual`) %>%
+  filter(Neighborhood %in% c("NoRidge","StoneBr","NridgHt","GrnHill","Veenker","Timber","Somerst","ClearCr","Crawfor","CollgCr")) %>%
+  group_by(Neighborhood) %>% summarize(MeanQual = mean(`Overall Qual`)) %>% arrange(desc(MeanQual))
+
+
+mean(ames_raw$`Overall Qual`)
+
+```
+<div style="text-align: left">▲평균 Overall Qual
+</div>
+\
+\
+<div style="text-align: left"></div>
+평균 Overall Qual를 기준으로 상위 10개 지역을 산출해보았다.
+평균 집 판매가격 순위와 비슷하게 산출됨을 알 수 있다. 당연한 결과였다.
+\
+상위 5개 지역은  평균 Overall Qual 상회하고 있다.
+
+```{r content14, include=TRUE, echo=FALSE}
+ames_raw %>% select(Neighborhood, `Overall Qual`) %>%
+  filter(Neighborhood %in% c("NoRidge","StoneBr","NridgHt","GrnHill","Veenker","Timber","Somerst","ClearCr","Crawfor","CollgCr")) %>% ggplot(aes(x = Neighborhood, y = `Overall Qual`, fill=Neighborhood)) + geom_boxplot(alpha=0.5,show.legend = TRUE) +
+  theme(legend.position="none") + stat_summary(geom='point',fun=mean,shape=23,size=3)
+```
+<center>**<표4> 상위 10개 평균 Overall Qual를 갖는 지역의 Boxplot**</center>
+
+<div style="text-align: left"> </div>
+\
+
+- Insight 1에서와 같이 North Ridge는 Outlier의 결과가 많이 나온다.
+- Green Hills는 평균과 중간값이 같다. (지역 내 집이 2 채 밖에 없다.)
+
+
+# Insight 3 
+**지붕 재료는 집들 중 98.53%(2930개의 집 중 2887개) 가 Standard Shingle을 사용했으나, 유독 Clear Creek 지역은 약 73%만 Standard Shingle을 사용하고, 나머지는 다른 지붕재료를 사용**
+
+
+```{r content4, include=TRUE, echo=FALSE}
+ames_raw %>% count(`Roof Matl`)
+```
+**▲ 지붕 재료 분포(Roof Matl)**
+
+```{r content5, include=TRUE, echo=FALSE}
+ames_raw %>% select(Neighborhood, `Roof Matl`) %>% 
+  filter(Neighborhood %in% c("Blmngtn","Blueste","BrDale","ClearCr","Greens","Veenker","GrnHill","Landmrk","MeadowV","NPkVill","SWISU")) %>%
+  ggplot(aes(x=`Roof Matl`, y=`Neighborhood`))+ 
+  geom_point()
+```
+<center>**<표5> 집이 50개 이하로 있는 지역들의 지붕 재료 분포.**</center>
+\
+\
+<div style="text-align: left">유독 Clear Creek 지역만 다양한 지붕 재료를 가지는 것을 알 수 있다. </div>
+\
+
+```{r content6, include=TRUE, echo=FALSE}
+
+ames_raw %>% select(`Roof Matl`, Neighborhood) %>%
+  group_by('Roof Matl') %>% filter(`Roof Matl` == "Tar&Grv") %>%
+  count(Neighborhood)
+ames_raw %>% select(`Roof Matl`, Neighborhood) %>%
+  group_by('Roof Matl') %>% filter(`Roof Matl` == "WdShake") %>%
+  count(Neighborhood)
+ames_raw %>% select(`Roof Matl`, Neighborhood) %>%
+  group_by('Roof Matl') %>% filter(`Roof Matl` == "WdShngl") %>%
+  count(Neighborhood)
+
+```
+**▲ 지붕 재료에 따른 지역 분포(Tar&Grv, Wdshake, Wdshangl)**
+\
+\
+Clear Creek 지역은 각 재료를 골고루 가지고 있다. 
+
+```{r content7, include=TRUE, echo=FALSE}
+ames_raw %>% select(Neighborhood, `Roof Matl`) %>% 
+  filter(Neighborhood == "ClearCr") %>% count(`Roof Matl`) %>%
+  ggplot(aes(x = n, y = fct_reorder(`Roof Matl`, n))) +
+  geom_col() + xlab('Number of House in Clear Creek') +ylab('Roof Matl')
+```
+<center>**<표6> Clear Creek 지역의 지붕 재료 분포.**</center>
+\
+<div style="text-align: left">  </div>
+\
+
+# Insight 4 
+**Fence 가 Minimum Wood/Wire 인 경우는 대부분 North Ames에 속했다.(총 12 건중 9건)**
+\
+\
+```{r content8, include=TRUE, echo=FALSE}
+ggplot(ames_raw, aes(x=Fence, y=SalePrice, color=Neighborhood))+ 
+  geom_point()+geom_smooth(method=lm, formula = y ~ x)
+```
+<center>**<표7> Fence 유형에 따른 지역 분포.**</center>
+\
+\
+<div style="text-align: left"> MnWw 항목은 다른 항목과 달리 같은 색깔의 점(Names)들이 모여 있다.  </div>
+이제 Fence가 MnWw인 지역들을 파악해보자.
+\
+\
+
+```{r content9, include=TRUE, echo=FALSE}
+ames_raw %>% select(Neighborhood, Fence) %>% filter(Fence == "MnWw")
+```
+\
+<div style="text-align: left"> Fence가 MnWw인 경우는 총 12건이고, 그 중 9 건이 North Ames이다.  </div>
+\
+\
+\
+```{r content10, include=TRUE, echo=FALSE}
+ames_raw %>% count(Neighborhood) %>% filter(n>100) %>%
+  ggplot(aes(x = n, y = fct_reorder(Neighborhood, n))) +
+  geom_col()
+```
+<center>**<표8> 집이 100 채 이상인 지역들의 집 개수 .**</center>
+\
+\
+<div style="text-align: left"> 비록 North Ames 지역에 집이 가장 많이 있더라도, MnWw는 지역들의 집 개수 순위와 비례하지 않음을 알 수 있다. </div>
+\
+
+
+
+# 그 외  
+
+**최근에 지어지거나, 리모델링한  집일 수록 판매가격이 높다.**
+
+```{r content15, include=TRUE, echo=FALSE}
+
+ames_raw %>%  select(Neighborhood,`Year Remod/Add`,SalePrice) %>% group_by(Neighborhood) %>% 
+  summarize(YearMean = mean(`Year Remod/Add`),SPMean = mean(SalePrice)) %>% arrange(desc(YearMean), desc(SPMean))
+```
+
+Year Remod/Add를 평균하여 내림차순으로 정렬해 SalePrice와의 연관성을
+알아보려 했지만 관계가 잘 나타나지 않았다.
+
+```{r content16, include=TRUE, echo=FALSE}
+EXP3 <- lm(SalePrice ~ `Year Remod/Add`, data = ames_raw)
+summary(EXP3)
+
+
+ggplot(ames_raw, aes(x=`Year Remod/Add`, y=SalePrice))+ 
+  geom_point()+geom_smooth(method=lm, formula = y ~ x)
+```
+<center>**<표9> Linear Method .**</center>
+
+<div style="text-align: left">  </div>
+
+
+- Linear method를 통해 상관 관계가 있는 것을 발견하였다.
+
+- 하지만 Year ReMod/Add 는  Insight 2의 Overall Qual에 비해 R^2 값도 낮고 상관관계가 크지도 않았다. 
+
+
+# 실수 목록들
+
+- 띄어쓰기된 열이름에 mean이 적용되지 않아서 이름을 변경함.
+
+ex) Year Remod/Add -> FinalYear
+/
+
+- `을 ' 로 착각해서 이런 오류가 발생하였고, 띄어쓰기는 상관 없었다.
+
+
+
+
+

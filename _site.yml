@@ -14,10 +14,10 @@ navbar:
       href: about.html
     - text: "Portfolio"
       href: portfolio.html
-    - text: "Study Note"
+    - text: "Assingnment"
       menu:
-        - text: "Linear Regression"
-          href: LR.html
+        - text: "Data Analysis(AmesHosuing)"
+          href: AmesHousing.html
         - text: "Non parametric method"
           href: NPM.html
         - text: "Time series"
