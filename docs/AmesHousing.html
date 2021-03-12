@@ -105,7 +105,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
   <!--radix_placeholder_rmarkdown_metadata-->
 
   <script type="text/json" id="radix-rmarkdown-metadata">
-  {"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["title"]}},"value":[{"type":"character","attributes":{},"value":["Data Analysis(AmesHosuing)"]}]}
+  {"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["title","output"]}},"value":[{"type":"character","attributes":{},"value":["Data Analysis(AmesHosuing)"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["distill::distill_article"]}},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["self_contained","code_folding"]}},"value":[{"type":"logical","attributes":{},"value":[false]},{"type":"logical","attributes":{},"value":[true]}]}]}]}
   </script>
   <!--/radix_placeholder_rmarkdown_metadata-->
   <!--radix_placeholder_navigation_in_header-->
@@ -2111,17 +2111,43 @@ Assingnment
 <div class="d-article">
 <h1 id="필요-라이브러리-모음">필요 라이브러리 모음</h1>
 <div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>
+Show code
+</summary>
 <div class="sourceCode">
 <pre class="sourceCode r"><code class="sourceCode r"><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='st'><a href='https://github.com/topepo/AmesHousing'>"AmesHousing"</a></span><span class='op'>)</span>
 <span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='st'><a href='http://tidyverse.tidyverse.org'>"tidyverse"</a></span><span class='op'>)</span>
 <span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='st'><a href='https://github.com/rstudio/rmarkdown'>"rmarkdown"</a></span><span class='op'>)</span>
 </code></pre>
 </div>
+</details>
 </div>
 <h1 id="insight-1">Insight 1</h1>
 <p><strong>NorthRidge, NorthRigde Heights 동네는 서울의 성북동과 같이 소수의 부자들이 살고 있는 곳으로 보인다.</strong></p>
 <div class="layout-chunk" data-layout="l-body">
-<p><img src="AmesHousing_files/figure-html5/content1-1.png" width="624" /></p>
+<details>
+<summary>
+Show code
+</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='fu'>ggplot</span><span class='op'>(</span><span class='va'>ames_raw</span>, <span class='fu'>aes</span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>SalePrice</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span> 
+  <span class='fu'>geom_histogram</span><span class='op'>(</span>bins <span class='op'>=</span> <span class='fl'>400</span><span class='op'>)</span>
+</code></pre>
+</div>
+</details>
+<img src="AmesHousing_files/figure-html5/content1-1.png" width="624" />
+<details>
+<summary>
+Show code
+</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>Table_SP</span><span class='op'>&lt;-</span><span class='va'>ames_raw</span> <span class='op'>%&gt;%</span> <span class='fu'>select</span><span class='op'>(</span><span class='va'>Neighborhood</span>,<span class='va'>SalePrice</span>, <span class='va'>`Overall Qual`</span><span class='op'>)</span> <span class='op'>%&gt;%</span>  <span class='fu'>group_by</span><span class='op'>(</span><span class='va'>Neighborhood</span><span class='op'>)</span> <span class='op'>%&gt;%</span> 
+  <span class='fu'>mutate</span><span class='op'>(</span>SalePrice_mean <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/mean.html'>mean</a></span><span class='op'>(</span><span class='va'>SalePrice</span>, na.rm <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span> 
+  <span class='fu'><a href='https://rdrr.io/r/stats/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>SalePrice_mean</span><span class='op'>&gt;=</span><span class='fl'>200000</span><span class='op'>)</span> <span class='op'>%&gt;%</span> <span class='fu'>arrange</span><span class='op'>(</span><span class='fu'>desc</span><span class='op'>(</span><span class='va'>SalePrice_mean</span><span class='op'>)</span><span class='op'>)</span> 
+</code></pre>
+</div>
+</details>
 </div>
 <center>
 <strong><표1> 전체 집의 판매가격 분포</strong>
@@ -2136,6 +2162,17 @@ Assingnment
 <br />
 
 <div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>
+Show code
+</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>Table_SP</span> <span class='op'>%&gt;%</span> <span class='fu'>group_by</span><span class='op'>(</span><span class='va'>Neighborhood</span><span class='op'>)</span> <span class='op'>%&gt;%</span> 
+  <span class='fu'>summarize</span><span class='op'>(</span>SalePrice_mean <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/mean.html'>mean</a></span><span class='op'>(</span><span class='va'>SalePrice</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span> 
+  <span class='fu'><a href='https://rdrr.io/r/stats/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>SalePrice_mean</span><span class='op'>&gt;=</span><span class='fl'>200000</span><span class='op'>)</span> <span class='op'>%&gt;%</span> <span class='fu'>arrange</span><span class='op'>(</span><span class='fu'>desc</span><span class='op'>(</span><span class='va'>SalePrice_mean</span><span class='op'>)</span><span class='op'>)</span>
+</code></pre>
+</div>
+</details>
 <pre><code># A tibble: 10 x 2
    Neighborhood SalePrice_mean
    &lt;chr&gt;                 &lt;dbl&gt;
@@ -2154,6 +2191,16 @@ Assingnment
 다음은 1~10위 평균 판매가격을 가진 지역들의 Boxplot이다.<br />
 </p>
 <div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>
+Show code
+</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='fu'>ggplot</span><span class='op'>(</span><span class='va'>Table_SP</span>, <span class='fu'>aes</span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>Neighborhood</span>, y <span class='op'>=</span> <span class='va'>SalePrice</span>, fill<span class='op'>=</span><span class='va'>Neighborhood</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span> <span class='fu'>geom_boxplot</span><span class='op'>(</span>alpha<span class='op'>=</span><span class='fl'>0.5</span>,show.legend <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'>theme</span><span class='op'>(</span>legend.position<span class='op'>=</span><span class='st'>"none"</span><span class='op'>)</span> <span class='op'>+</span> <span class='fu'>stat_summary</span><span class='op'>(</span>geom<span class='op'>=</span><span class='st'>'point'</span>,fun<span class='op'>=</span><span class='va'>mean</span>,shape<span class='op'>=</span><span class='fl'>23</span>,size<span class='op'>=</span><span class='fl'>3</span><span class='op'>)</span>
+</code></pre>
+</div>
+</details>
 <p><img src="AmesHousing_files/figure-html5/content3-1.png" width="624" /></p>
 </div>
 <center>
@@ -2175,6 +2222,17 @@ Assingnment
 <p><strong>판매가격을 종속변수로 잡고 다른 항목들을 독립변수로 대입해본 결과 Overall Qual 항 목이 제일 연관성이 높았다. (R^2 높게 산출됨.)</strong></p>
 <p>Overall Qual 과 Overall Cond 에 대한 <em>ANOVA</em> 실행결과 :</p>
 <div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>
+Show code
+</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>EXP1</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/lm.html'>lm</a></span><span class='op'>(</span><span class='va'>SalePrice</span> <span class='op'>~</span> <span class='va'>`Overall Cond`</span>,data <span class='op'>=</span> <span class='va'>ames_raw</span><span class='op'>)</span>
+<span class='va'>EXP2</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/lm.html'>lm</a></span><span class='op'>(</span><span class='va'>SalePrice</span> <span class='op'>~</span> <span class='va'>`Overall Qual`</span> ,data <span class='op'>=</span> <span class='va'>ames_raw</span><span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/r/base/summary.html'>summary</a></span><span class='op'>(</span><span class='va'>EXP1</span><span class='op'>)</span>
+</code></pre>
+</div>
+</details>
 <pre><code>
 Call:
 lm(formula = SalePrice ~ `Overall Cond`, data = ames_raw)
@@ -2193,6 +2251,15 @@ Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&
 Residual standard error: 79490 on 2928 degrees of freedom
 Multiple R-squared:  0.01034,   Adjusted R-squared:   0.01 
 F-statistic:  30.6 on 1 and 2928 DF,  p-value: 3.453e-08</code></pre>
+<details>
+<summary>
+Show code
+</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='fu'><a href='https://rdrr.io/r/base/summary.html'>summary</a></span><span class='op'>(</span><span class='va'>EXP2</span><span class='op'>)</span>
+</code></pre>
+</div>
+</details>
 <pre><code>
 Call:
 lm(formula = SalePrice ~ `Overall Qual`, data = ames_raw)
@@ -2216,6 +2283,16 @@ F-statistic:  5179 on 1 and 2928 DF,  p-value: &lt; 2.2e-16</code></pre>
 <li>Overall Qual 이 상대적으로 높은 R^2(0.6388)값과 작은 p-value가 산출됨</li>
 </ul>
 <div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>
+Show code
+</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='fu'>ggplot</span><span class='op'>(</span><span class='va'>ames_raw</span>, <span class='fu'>aes</span><span class='op'>(</span>x<span class='op'>=</span><span class='va'>`Overall Qual`</span>, y<span class='op'>=</span><span class='va'>SalePrice</span> <span class='op'>)</span><span class='op'>)</span><span class='op'>+</span> 
+  <span class='fu'>geom_point</span><span class='op'>(</span><span class='op'>)</span><span class='op'>+</span><span class='fu'>geom_smooth</span><span class='op'>(</span>method<span class='op'>=</span><span class='va'>lm</span>, formula <span class='op'>=</span> <span class='va'>y</span> <span class='op'>~</span> <span class='va'>x</span><span class='op'>)</span>
+</code></pre>
+</div>
+</details>
 <p><img src="AmesHousing_files/figure-html5/content12-1.png" width="624" /></p>
 </div>
 <center>
@@ -2230,6 +2307,17 @@ F-statistic:  5179 on 1 and 2928 DF,  p-value: &lt; 2.2e-16</code></pre>
 <p>(이외에 다양한 변수들에 대하여 실험을 진행해봤으나 Overall Qual이 압도적이다.)<br />
 </p>
 <div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>
+Show code
+</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>ames_raw</span> <span class='op'>%&gt;%</span> <span class='fu'>select</span><span class='op'>(</span><span class='va'>Neighborhood</span>, <span class='va'>`Overall Qual`</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+  <span class='fu'><a href='https://rdrr.io/r/stats/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>Neighborhood</span> <span class='op'>%in%</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"NoRidge"</span>,<span class='st'>"StoneBr"</span>,<span class='st'>"NridgHt"</span>,<span class='st'>"GrnHill"</span>,<span class='st'>"Veenker"</span>,<span class='st'>"Timber"</span>,<span class='st'>"Somerst"</span>,<span class='st'>"ClearCr"</span>,<span class='st'>"Crawfor"</span>,<span class='st'>"CollgCr"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+  <span class='fu'>group_by</span><span class='op'>(</span><span class='va'>Neighborhood</span><span class='op'>)</span> <span class='op'>%&gt;%</span> <span class='fu'>summarize</span><span class='op'>(</span>MeanQual <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/mean.html'>mean</a></span><span class='op'>(</span><span class='va'>`Overall Qual`</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span> <span class='fu'>arrange</span><span class='op'>(</span><span class='fu'>desc</span><span class='op'>(</span><span class='va'>MeanQual</span><span class='op'>)</span><span class='op'>)</span>
+</code></pre>
+</div>
+</details>
 <pre><code># A tibble: 10 x 2
    Neighborhood MeanQual
    &lt;chr&gt;           &lt;dbl&gt;
@@ -2243,6 +2331,15 @@ F-statistic:  5179 on 1 and 2928 DF,  p-value: &lt; 2.2e-16</code></pre>
  8 CollgCr          6.68
  9 Crawfor          6.27
 10 ClearCr          5.98</code></pre>
+<details>
+<summary>
+Show code
+</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='fu'><a href='https://rdrr.io/r/base/mean.html'>mean</a></span><span class='op'>(</span><span class='va'>ames_raw</span><span class='op'>$</span><span class='va'>`Overall Qual`</span><span class='op'>)</span>
+</code></pre>
+</div>
+</details>
 <pre><code>[1] 6.094881</code></pre>
 </div>
 <div style="text-align: left">
@@ -2257,6 +2354,17 @@ F-statistic:  5179 on 1 and 2928 DF,  p-value: &lt; 2.2e-16</code></pre>
 <p>평균 Overall Qual를 기준으로 상위 10개 지역을 산출해보았다. 평균 집 판매가격 순위와 비슷하게 산출됨을 알 수 있다. 당연한 결과였다.<br />
 상위 5개 지역은 평균 Overall Qual 상회하고 있다.</p>
 <div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>
+Show code
+</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>ames_raw</span> <span class='op'>%&gt;%</span> <span class='fu'>select</span><span class='op'>(</span><span class='va'>Neighborhood</span>, <span class='va'>`Overall Qual`</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+  <span class='fu'><a href='https://rdrr.io/r/stats/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>Neighborhood</span> <span class='op'>%in%</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"NoRidge"</span>,<span class='st'>"StoneBr"</span>,<span class='st'>"NridgHt"</span>,<span class='st'>"GrnHill"</span>,<span class='st'>"Veenker"</span>,<span class='st'>"Timber"</span>,<span class='st'>"Somerst"</span>,<span class='st'>"ClearCr"</span>,<span class='st'>"Crawfor"</span>,<span class='st'>"CollgCr"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span> <span class='fu'>ggplot</span><span class='op'>(</span><span class='fu'>aes</span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>Neighborhood</span>, y <span class='op'>=</span> <span class='va'>`Overall Qual`</span>, fill<span class='op'>=</span><span class='va'>Neighborhood</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span> <span class='fu'>geom_boxplot</span><span class='op'>(</span>alpha<span class='op'>=</span><span class='fl'>0.5</span>,show.legend <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'>theme</span><span class='op'>(</span>legend.position<span class='op'>=</span><span class='st'>"none"</span><span class='op'>)</span> <span class='op'>+</span> <span class='fu'>stat_summary</span><span class='op'>(</span>geom<span class='op'>=</span><span class='st'>'point'</span>,fun<span class='op'>=</span><span class='va'>mean</span>,shape<span class='op'>=</span><span class='fl'>23</span>,size<span class='op'>=</span><span class='fl'>3</span><span class='op'>)</span>
+</code></pre>
+</div>
+</details>
 <p><img src="AmesHousing_files/figure-html5/content14-1.png" width="624" /></p>
 </div>
 <center>
@@ -2274,6 +2382,15 @@ F-statistic:  5179 on 1 and 2928 DF,  p-value: &lt; 2.2e-16</code></pre>
 <h1 id="insight-3">Insight 3</h1>
 <p><strong>지붕 재료는 집들 중 98.53%(2930개의 집 중 2887개) 가 Standard Shingle을 사용했으나, 유독 Clear Creek 지역은 약 73%만 Standard Shingle을 사용하고, 나머지는 다른 지붕재료를 사용</strong></p>
 <div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>
+Show code
+</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>ames_raw</span> <span class='op'>%&gt;%</span> <span class='fu'>count</span><span class='op'>(</span><span class='va'>`Roof Matl`</span><span class='op'>)</span>
+</code></pre>
+</div>
+</details>
 <pre><code># A tibble: 8 x 2
   `Roof Matl`     n
 * &lt;chr&gt;       &lt;int&gt;
@@ -2288,6 +2405,18 @@ F-statistic:  5179 on 1 and 2928 DF,  p-value: &lt; 2.2e-16</code></pre>
 </div>
 <p><strong>▲ 지붕 재료 분포(Roof Matl)</strong></p>
 <div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>
+Show code
+</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>ames_raw</span> <span class='op'>%&gt;%</span> <span class='fu'>select</span><span class='op'>(</span><span class='va'>Neighborhood</span>, <span class='va'>`Roof Matl`</span><span class='op'>)</span> <span class='op'>%&gt;%</span> 
+  <span class='fu'><a href='https://rdrr.io/r/stats/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>Neighborhood</span> <span class='op'>%in%</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"Blmngtn"</span>,<span class='st'>"Blueste"</span>,<span class='st'>"BrDale"</span>,<span class='st'>"ClearCr"</span>,<span class='st'>"Greens"</span>,<span class='st'>"Veenker"</span>,<span class='st'>"GrnHill"</span>,<span class='st'>"Landmrk"</span>,<span class='st'>"MeadowV"</span>,<span class='st'>"NPkVill"</span>,<span class='st'>"SWISU"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+  <span class='fu'>ggplot</span><span class='op'>(</span><span class='fu'>aes</span><span class='op'>(</span>x<span class='op'>=</span><span class='va'>`Roof Matl`</span>, y<span class='op'>=</span><span class='va'>`Neighborhood`</span><span class='op'>)</span><span class='op'>)</span><span class='op'>+</span> 
+  <span class='fu'>geom_point</span><span class='op'>(</span><span class='op'>)</span>
+</code></pre>
+</div>
+</details>
 <p><img src="AmesHousing_files/figure-html5/content5-1.png" width="624" /></p>
 </div>
 <center>
@@ -2302,6 +2431,17 @@ F-statistic:  5179 on 1 and 2928 DF,  p-value: &lt; 2.2e-16</code></pre>
 <p><br />
 </p>
 <div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>
+Show code
+</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>ames_raw</span> <span class='op'>%&gt;%</span> <span class='fu'>select</span><span class='op'>(</span><span class='va'>`Roof Matl`</span>, <span class='va'>Neighborhood</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+  <span class='fu'>group_by</span><span class='op'>(</span><span class='st'>'Roof Matl'</span><span class='op'>)</span> <span class='op'>%&gt;%</span> <span class='fu'><a href='https://rdrr.io/r/stats/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>`Roof Matl`</span> <span class='op'>==</span> <span class='st'>"Tar&amp;Grv"</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+  <span class='fu'>count</span><span class='op'>(</span><span class='va'>Neighborhood</span><span class='op'>)</span>
+</code></pre>
+</div>
+</details>
 <pre><code># A tibble: 7 x 3
 # Groups:   &quot;Roof Matl&quot; [1]
   `&quot;Roof Matl&quot;` Neighborhood     n
@@ -2313,6 +2453,17 @@ F-statistic:  5179 on 1 and 2928 DF,  p-value: &lt; 2.2e-16</code></pre>
 5 Roof Matl     SawyerW          1
 6 Roof Matl     SWISU            1
 7 Roof Matl     Timber           1</code></pre>
+<details>
+<summary>
+Show code
+</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>ames_raw</span> <span class='op'>%&gt;%</span> <span class='fu'>select</span><span class='op'>(</span><span class='va'>`Roof Matl`</span>, <span class='va'>Neighborhood</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+  <span class='fu'>group_by</span><span class='op'>(</span><span class='st'>'Roof Matl'</span><span class='op'>)</span> <span class='op'>%&gt;%</span> <span class='fu'><a href='https://rdrr.io/r/stats/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>`Roof Matl`</span> <span class='op'>==</span> <span class='st'>"WdShake"</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+  <span class='fu'>count</span><span class='op'>(</span><span class='va'>Neighborhood</span><span class='op'>)</span>
+</code></pre>
+</div>
+</details>
 <pre><code># A tibble: 5 x 3
 # Groups:   &quot;Roof Matl&quot; [1]
   `&quot;Roof Matl&quot;` Neighborhood     n
@@ -2322,6 +2473,17 @@ F-statistic:  5179 on 1 and 2928 DF,  p-value: &lt; 2.2e-16</code></pre>
 3 Roof Matl     NoRidge          1
 4 Roof Matl     NWAmes           3
 5 Roof Matl     Timber           2</code></pre>
+<details>
+<summary>
+Show code
+</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>ames_raw</span> <span class='op'>%&gt;%</span> <span class='fu'>select</span><span class='op'>(</span><span class='va'>`Roof Matl`</span>, <span class='va'>Neighborhood</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+  <span class='fu'>group_by</span><span class='op'>(</span><span class='st'>'Roof Matl'</span><span class='op'>)</span> <span class='op'>%&gt;%</span> <span class='fu'><a href='https://rdrr.io/r/stats/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>`Roof Matl`</span> <span class='op'>==</span> <span class='st'>"WdShngl"</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+  <span class='fu'>count</span><span class='op'>(</span><span class='va'>Neighborhood</span><span class='op'>)</span>
+</code></pre>
+</div>
+</details>
 <pre><code># A tibble: 6 x 3
 # Groups:   &quot;Roof Matl&quot; [1]
   `&quot;Roof Matl&quot;` Neighborhood     n
@@ -2337,6 +2499,18 @@ F-statistic:  5179 on 1 and 2928 DF,  p-value: &lt; 2.2e-16</code></pre>
 <br />
 Clear Creek 지역은 각 재료를 골고루 가지고 있다.</p>
 <div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>
+Show code
+</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>ames_raw</span> <span class='op'>%&gt;%</span> <span class='fu'>select</span><span class='op'>(</span><span class='va'>Neighborhood</span>, <span class='va'>`Roof Matl`</span><span class='op'>)</span> <span class='op'>%&gt;%</span> 
+  <span class='fu'><a href='https://rdrr.io/r/stats/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>Neighborhood</span> <span class='op'>==</span> <span class='st'>"ClearCr"</span><span class='op'>)</span> <span class='op'>%&gt;%</span> <span class='fu'>count</span><span class='op'>(</span><span class='va'>`Roof Matl`</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+  <span class='fu'>ggplot</span><span class='op'>(</span><span class='fu'>aes</span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>n</span>, y <span class='op'>=</span> <span class='fu'>fct_reorder</span><span class='op'>(</span><span class='va'>`Roof Matl`</span>, <span class='va'>n</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'>geom_col</span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span> <span class='fu'>xlab</span><span class='op'>(</span><span class='st'>'Number of House in Clear Creek'</span><span class='op'>)</span> <span class='op'>+</span><span class='fu'>ylab</span><span class='op'>(</span><span class='st'>'Roof Matl'</span><span class='op'>)</span>
+</code></pre>
+</div>
+</details>
 <p><img src="AmesHousing_files/figure-html5/content7-1.png" width="624" /></p>
 </div>
 <center>
@@ -2354,6 +2528,16 @@ Clear Creek 지역은 각 재료를 골고루 가지고 있다.</p>
 <br />
 
 <div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>
+Show code
+</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='fu'>ggplot</span><span class='op'>(</span><span class='va'>ames_raw</span>, <span class='fu'>aes</span><span class='op'>(</span>x<span class='op'>=</span><span class='va'>Fence</span>, y<span class='op'>=</span><span class='va'>SalePrice</span>, color<span class='op'>=</span><span class='va'>Neighborhood</span><span class='op'>)</span><span class='op'>)</span><span class='op'>+</span> 
+  <span class='fu'>geom_point</span><span class='op'>(</span><span class='op'>)</span><span class='op'>+</span><span class='fu'>geom_smooth</span><span class='op'>(</span>method<span class='op'>=</span><span class='va'>lm</span>, formula <span class='op'>=</span> <span class='va'>y</span> <span class='op'>~</span> <span class='va'>x</span><span class='op'>)</span>
+</code></pre>
+</div>
+</details>
 <p><img src="AmesHousing_files/figure-html5/content8-1.png" width="624" /></p>
 </div>
 <center>
@@ -2369,6 +2553,15 @@ MnWw 항목은 다른 항목과 달리 같은 색깔의 점(Names)들이 모여 
 <br />
 </p>
 <div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>
+Show code
+</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>ames_raw</span> <span class='op'>%&gt;%</span> <span class='fu'>select</span><span class='op'>(</span><span class='va'>Neighborhood</span>, <span class='va'>Fence</span><span class='op'>)</span> <span class='op'>%&gt;%</span> <span class='fu'><a href='https://rdrr.io/r/stats/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>Fence</span> <span class='op'>==</span> <span class='st'>"MnWw"</span><span class='op'>)</span>
+</code></pre>
+</div>
+</details>
 <pre><code># A tibble: 12 x 2
    Neighborhood Fence
    &lt;chr&gt;        &lt;chr&gt;
@@ -2395,6 +2588,17 @@ Fence가 MnWw인 경우는 총 12건이고, 그 중 9 건이 North Ames이다.
 <br />
 
 <div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>
+Show code
+</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>ames_raw</span> <span class='op'>%&gt;%</span> <span class='fu'>count</span><span class='op'>(</span><span class='va'>Neighborhood</span><span class='op'>)</span> <span class='op'>%&gt;%</span> <span class='fu'><a href='https://rdrr.io/r/stats/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>n</span><span class='op'>&gt;</span><span class='fl'>100</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+  <span class='fu'>ggplot</span><span class='op'>(</span><span class='fu'>aes</span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>n</span>, y <span class='op'>=</span> <span class='fu'>fct_reorder</span><span class='op'>(</span><span class='va'>Neighborhood</span>, <span class='va'>n</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'>geom_col</span><span class='op'>(</span><span class='op'>)</span>
+</code></pre>
+</div>
+</details>
 <p><img src="AmesHousing_files/figure-html5/content10-1.png" width="624" /></p>
 </div>
 <center>
@@ -2411,6 +2615,16 @@ Fence가 MnWw인 경우는 총 12건이고, 그 중 9 건이 North Ames이다.
 <h1 id="그-외">그 외</h1>
 <p><strong>최근에 지어지거나, 리모델링한 집일 수록 판매가격이 높다.</strong></p>
 <div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>
+Show code
+</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>ames_raw</span> <span class='op'>%&gt;%</span>  <span class='fu'>select</span><span class='op'>(</span><span class='va'>Neighborhood</span>,<span class='va'>`Year Remod/Add`</span>,<span class='va'>SalePrice</span><span class='op'>)</span> <span class='op'>%&gt;%</span> <span class='fu'>group_by</span><span class='op'>(</span><span class='va'>Neighborhood</span><span class='op'>)</span> <span class='op'>%&gt;%</span> 
+  <span class='fu'>summarize</span><span class='op'>(</span>YearMean <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/mean.html'>mean</a></span><span class='op'>(</span><span class='va'>`Year Remod/Add`</span><span class='op'>)</span>,SPMean <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/mean.html'>mean</a></span><span class='op'>(</span><span class='va'>SalePrice</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span> <span class='fu'>arrange</span><span class='op'>(</span><span class='fu'>desc</span><span class='op'>(</span><span class='va'>YearMean</span><span class='op'>)</span>, <span class='fu'>desc</span><span class='op'>(</span><span class='va'>SPMean</span><span class='op'>)</span><span class='op'>)</span>
+</code></pre>
+</div>
+</details>
 <pre><code># A tibble: 28 x 3
    Neighborhood YearMean  SPMean
    &lt;chr&gt;           &lt;dbl&gt;   &lt;dbl&gt;
@@ -2428,6 +2642,16 @@ Fence가 MnWw인 경우는 총 12건이고, 그 중 9 건이 North Ames이다.
 </div>
 <p>Year Remod/Add를 평균하여 내림차순으로 정렬해 SalePrice와의 연관성을 알아보려 했지만 관계가 잘 나타나지 않았다.</p>
 <div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>
+Show code
+</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='va'>EXP3</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/lm.html'>lm</a></span><span class='op'>(</span><span class='va'>SalePrice</span> <span class='op'>~</span> <span class='va'>`Year Remod/Add`</span>, data <span class='op'>=</span> <span class='va'>ames_raw</span><span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/r/base/summary.html'>summary</a></span><span class='op'>(</span><span class='va'>EXP3</span><span class='op'>)</span>
+</code></pre>
+</div>
+</details>
 <pre><code>
 Call:
 lm(formula = SalePrice ~ `Year Remod/Add`, data = ames_raw)
@@ -2446,6 +2670,16 @@ Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&
 Residual standard error: 67610 on 2928 degrees of freedom
 Multiple R-squared:  0.2841,    Adjusted R-squared:  0.2838 
 F-statistic:  1162 on 1 and 2928 DF,  p-value: &lt; 2.2e-16</code></pre>
+<details>
+<summary>
+Show code
+</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class='fu'>ggplot</span><span class='op'>(</span><span class='va'>ames_raw</span>, <span class='fu'>aes</span><span class='op'>(</span>x<span class='op'>=</span><span class='va'>`Year Remod/Add`</span>, y<span class='op'>=</span><span class='va'>SalePrice</span><span class='op'>)</span><span class='op'>)</span><span class='op'>+</span> 
+  <span class='fu'>geom_point</span><span class='op'>(</span><span class='op'>)</span><span class='op'>+</span><span class='fu'>geom_smooth</span><span class='op'>(</span>method<span class='op'>=</span><span class='va'>lm</span>, formula <span class='op'>=</span> <span class='va'>y</span> <span class='op'>~</span> <span class='va'>x</span><span class='op'>)</span>
+</code></pre>
+</div>
+</details>
 <p><img src="AmesHousing_files/figure-html5/content16-1.png" width="624" /></p>
 </div>
 <center>
