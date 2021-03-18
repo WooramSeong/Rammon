@@ -1,0 +1,408 @@
+---
+title: "Prediction With AmesHousing"
+output:
+  distill::distill_article:
+    self_contained: false
+    code_folding: true
+---
+
+# 필요 라이브러리 모음 
+```{r library, include=TRUE}
+library("tidyverse")
+library("readr")
+library("car")
+library("xlsx")
+
+```
+
+
+# 데이터 정리 작업 (NA처리)
+```{r file, include=TRUE}
+
+train <- read_csv("Lecture3/train.csv")
+test <- read_csv("Lecture3/test.csv")
+
+test$KitchenQual <- ifelse(is.na(test$KitchenQual),"TA", test$KitchenQual)
+test$GarageCars <- ifelse(is.na(test$GarageCars),0, test$GarageCars)
+
+sample <- read_csv("Lecture3/sample_submission.csv")
+```
+
+
+## 1. Linear Model 로 분석
+
+**(1) Stepwise Regression을 사용하여 독립변수들을 선정하였다.**
+\
+\
+**(2) Car 패키지를 이용하여 VIF가 10이 넘는 변수들을 제거해준다.**
+\
+\
+**(3) Plot을 통해 Outliers과 Influential points를 제거해준다 .**
+\
+\
+
+# 결과 
+
+- Linear 모델의 단점인 종속변수의 음수값이 나왔었다.
+
+- Train Data로 부터 최종 Adjusted R-Squared는 0.8446이 나왔다.
+
+- Test MSE를 Square Root 한 결과 69273.98 값이 나왔다.
+
+
+```{r content1, include=TRUE, message=FALSE,echo=FALSE}
+
+EXP1 <- lm(SalePrice ~ OverallQual,data = train)
+EXP2 <- lm(SalePrice ~ OverallQual + OverallCond + LotArea + YearBuilt + YearRemodAdd + MasVnrArea + TotalBsmtSF + GrLivArea + FullBath +      
+             HalfBath + BedroomAbvGr + KitchenQual +TotRmsAbvGrd + Fireplaces + GarageCars + PoolArea + MiscVal , data = train)
+EXP3 <- lm(SalePrice ~ OverallQual + OverallCond + LotArea + YearBuilt + YearRemodAdd + Fireplaces + TotalBsmtSF + GrLivArea + FullBath +      
+             HalfBath + BedroomAbvGr + KitchenQual +TotRmsAbvGrd + GarageCars + PoolArea + MiscVal , data = train)
+
+summary(EXP1)
+summary(EXP3)
+
+
+#StepWise Regression
+
+## MasVnrArea NA가 데이터 값 중에 있었다. 그래서 자꾸만 오류가 생김
+sum(is.na(train$MasVnrArea))
+# 총 8개 건수 발견, 차라리 변수로 고려하지 않는 게 낫다고 판단하였다.
+
+Train.Forward <- step(EXP1,scope=list(lower=EXP1,upper=EXP3),direction = "forward")
+Train.Backward <- step(EXP3,scope=list(lower=EXP1,upper=EXP3),direction = "backward")
+Train.Both <- step(EXP3,scope=list(lower=EXP1,upper=EXP3),direction = "both")
+summary(Train.Forward)
+summary(Train.Backward)
+summary(Train.Both)
+
+```
+
+다행히도(?) 3가지 방법 모두 같은 독립 변수들을 선택하였다.
+
+변수들은 다음과 같다. 
+
+```{r content2, include=TRUE, echo=TRUE}
+
+names(Train.Both$coefficients)
+```
+\
+
+다중공선성을 구하여 변수를 제거해보자.
+Variance Inflation Factor 가 10이 넘으면 문제가 있는 것이다.
+\
+
+```{r content3, include=TRUE, echo=FALSE}
+
+vif(Train.Both) 
+
+plot(Train.Both)
+
+
+```
+\
+\
+<div style="text-align: left"> 그래프를 통해 314,336,524,692,1183,1299번 이상치들을 발견하였고, 이들을 제거해주었다. </div>
+\
+\
+```{r content11, include=TRUE, echo=TRUE}
+
+Modified_Train <- lm(SalePrice ~ OverallQual + OverallCond + LotArea + YearBuilt +   
+                YearRemodAdd + Fireplaces +  GrLivArea + FullBath +  
+                HalfBath + BedroomAbvGr + KitchenQual + TotRmsAbvGrd + GarageCars  
+                 , data=train[-c(314,336,524,692,1183,1299), ])
+summary(Modified_Train)
+
+par(mfrow=c(2,2))
+plot(Modified_Train)
+
+## R^2 값이 소폭 상승하였다.
+
+sample[,3] <- predict(Modified_Train, newdata = test)
+
+
+
+```
+
+TEST MSE를 구해보자.
+
+```{r content12, include=TRUE, echo=TRUE}
+
+a<-((sample[,2]-sample[,3])^2)
+a<-na.exclude(a)
+sum(a)/nrow(sample)
+```
+
+## 2. Generalized Linear Model 로 분석
+
+**(1) 음수의 결과값들을 만들지 않기 위해 GLM을 적용하였다.**
+\
+\
+**(2) Family Gamma (Link Function 은 Log를 이용).**
+\
+\
+**(3) 분석과정은 1.LM 분석과 동일하다. **
+\
+\
+
+
+# 결과 
+
+- 음수의 결과값은 해결됐으나 TEST MSE는 오히려 증가했다 .
+
+- 지수함수의 특성상, X들의 값이 증가할 수록 Y값들도 기하급수로 증가하였다.
+
+- Train Data로 부터 최종 AIC 는 33448이 나왔다.
+
+- Test MSE를 Square Root 한 결과 74512.99 (lm = 69273.98) 값이 나왔다.
+
+```{r content13, include=TRUE, echo=TRUE}
+EXP11 <- glm(SalePrice~ OverallQual, family = Gamma(link="log"), data = train)
+
+EXP12 <- glm(SalePrice ~ OverallQual + OverallCond + LotArea + YearBuilt + YearRemodAdd + Fireplaces + GrLivArea + BsmtHalfBath + FullBath +      
+               HalfBath + BedroomAbvGr + KitchenQual +TotRmsAbvGrd + GarageCars + PoolArea + MiscVal , Gamma(link="log"), data = train)
+summary(EXP11)
+summary(EXP12)
+
+
+#StepWise Regression
+
+Train.Forward2 <- step(EXP11,scope=list(lower=EXP11,upper=EXP12),direction = "forward")
+Train.Backward2 <- step(EXP12,scope=list(lower=EXP11,upper=EXP12),direction = "backward")
+Train.Both2 <- step(EXP12,scope=list(lower=EXP11,upper=EXP12),direction = "both")
+summary(Train.Forward2)
+summary(Train.Backward2)
+summary(Train.Both2)
+names(Train.Both2$coefficients)
+
+# 모두 같은 독립 변수들을 선택하였다.
+
+
+#다중공선성을 구하여 변수를 제거해보자.
+#Variance Inflation Factor 가 10이 넘으면 문제가 있다는 것이다.
+
+vif(Train.Both2) 
+
+plot(Train.Both2)
+
+##250,524,689,1299번 이상치
+
+Modified_Train2 <- glm(SalePrice ~ OverallQual + OverallCond + LotArea + YearBuilt +   
+                         YearRemodAdd + Fireplaces +  GrLivArea + FullBath +  
+                         HalfBath + BedroomAbvGr + KitchenQual + TotRmsAbvGrd + GarageCars , family = Gamma(link="log"), data=train[-c(250,524,689,1299), ])
+summary(Modified_Train2)
+
+par(mfrow=c(2,2))
+plot(Modified_Train2)
+
+
+
+## AIC 값이 소폭 하락하였다
+
+sample[,4] <- exp(predict(Modified_Train2, newdata = test))
+
+```
+
+## 3. Linear Model (No intercept) 로 분석
+
+**(1) 음수의 결과값들을 만들지 않기 위해 intercept를 없앴다.**
+\
+\
+**(2) 일부 독립변수에 제곱을 넣어보았다. .**
+\
+\
+**(3) 분석과정은 1.LM 분석과 동일하다. **
+\
+\
+
+
+# 결과 
+
+- 음수의 결과값은 해결됐으나 TEST MSE는 오히려 증가했다 .
+
+- Overfitting(과적합)의 문제가 발생하였다.
+
+- Train Data로 부터 최종 Adjusted R-Squared는 0.9776이 나왔다.
+
+- Test MSE를 Square Root 한 결과 70062.37 (lm = 69273.98) 값이 나왔다.
+
+```{r content14, include=TRUE, echo=TRUE}
+EXP21 <- lm(SalePrice ~ -1 + I(OverallQual^2),data = train)
+EXP22 <- lm(SalePrice ~ -1 + I(OverallQual^2) + I(OverallCond^2) + LotArea + YearBuilt + YearRemodAdd + Fireplaces + GrLivArea + BsmtHalfBath + FullBath +      
+              HalfBath + BedroomAbvGr + KitchenQual +TotRmsAbvGrd + GarageCars + PoolArea + MiscVal , data = train)
+
+
+summary(EXP21)
+summary(EXP22)
+
+
+#StepWise Regression
+
+Train.Forward3 <- step(EXP21,scope=list(lower=EXP21,upper=EXP22),direction = "forward")
+Train.Backward3 <- step(EXP22,scope=list(lower=EXP21,upper=EXP22),direction = "backward")
+Train.Both3 <- step(EXP22,scope=list(lower=EXP21,upper=EXP22),direction = "both")
+summary(Train.Forward3)
+summary(Train.Backward3)
+summary(Train.Both3)
+names(Train.Both$coefficients)
+
+vif(Train.Both3) 
+#YearBuilt 변수 삭제 (VIF=108.7이 나옴)
+
+VIF_Train <- lm(SalePrice ~ -1 + I(OverallQual^2) + I(OverallCond^2) + LotArea +   
+                  YearRemodAdd + Fireplaces +  TotalBsmtSF + GrLivArea + FullBath +  
+                  HalfBath + BedroomAbvGr + KitchenQual + TotRmsAbvGrd + GarageCars , data=train)
+
+vif(VIF_Train)
+summary(VIF_Train)
+
+VIF_Train2 <- lm(SalePrice ~ -1 + I(OverallQual^2) + I(OverallCond^2) + LotArea +   
+                  Fireplaces +  TotalBsmtSF + GrLivArea + FullBath +  
+                  HalfBath + BedroomAbvGr + KitchenQual + TotRmsAbvGrd + GarageCars , data=train)
+
+vif(VIF_Train2)
+summary(VIF_Train2)
+
+
+
+
+par(mfrow=c(2,2))
+plot(VIF_Train)
+
+##524,692,1183,1299번 Outlier
+Modified_Train3<-lm(SalePrice ~ -1 + I(OverallQual^2) + I(OverallCond^2) + LotArea +   
+                       Fireplaces +  TotalBsmtSF + GrLivArea + FullBath +  
+                      HalfBath + BedroomAbvGr + KitchenQual + TotRmsAbvGrd + GarageCars , data=train[-c(524,692,1183,1299), ])
+summary(Modified_Train3)
+
+par(mfrow=c(2,2))
+plot(Modified_Train3)
+
+## R^2 값이 소폭 상승하였다 (From 0.9673 to 0.9767)
+
+
+sample[,5] <- predict(Modified_Train3, newdata = test)
+
+
+## Overfitting(과적합)의 문제가 발생
+```
+
+## 4. Linear Model (자의적 선택) 로 분석
+
+**(1) 데이터를 분석하여 가장 연관이 높은 변수들을 선정해서 넣었다.**
+\
+\
+**(2) Intercept는 0으로 설정. .**
+\
+\
+**(3) lm과 glm(gamma)으로 해본 결과, lm이 더 유의미한 결과를 보였다. **
+\
+\
+
+
+# 결과 
+
+- lm의 Adjusted R-Squared는 0.9723이 나왔다.
+
+- glm의 AIC는 33710이었다.
+
+- lm의 Test MSE를 Square Root 한 결과 67094.14 (1.lm = 69273.98) 값이 나왔다.
+
+- glm의 Test MSE를 Square Root 한 결과 72931.86 (1.lm = 69273.98) 값이 나왔다.
+
+
+```{r content4, include=TRUE, echo=TRUE}
+
+FinalEXP <- lm(SalePrice ~ -1 + I(OverallQual^2) +  YearRemodAdd + I(sqrt(LotArea)) + GarageCars+ TotRmsAbvGrd + KitchenQual + PavedDrive + FullBath + GrLivArea ,data = train)
+vif(FinalEXP)
+summary(FinalEXP)
+plot(FinalEXP)
+FinalEXP <- lm(SalePrice ~ -1 + I(OverallQual^2) + I(sqrt(LotArea)) + GarageCars + TotRmsAbvGrd +  KitchenQual + PavedDrive + FullBath + GrLivArea ,data = train[-c(314,336,692,1183,1299),])
+vif(FinalEXP)
+summary(FinalEXP)
+plot(FinalEXP)
+
+
+FinalEXP2 <- glm(SalePrice ~ I(OverallQual^2) + YearRemodAdd + I(sqrt(LotArea)) + GarageCars+ TotRmsAbvGrd + KitchenQual + PavedDrive + FullBath + GrLivArea , family = Gamma(link="log")  ,data = train)
+vif(FinalEXP2)
+summary(FinalEXP2)
+plot(FinalEXP2)
+FinalEXP2 <- glm(SalePrice ~ I(OverallQual^2) + YearRemodAdd + I(sqrt(LotArea)) + GarageCars + TotRmsAbvGrd +  KitchenQual + PavedDrive + FullBath + GrLivArea , family = Gamma(link="log") ,data = train[-c(314,336,692,1183,1299),])
+vif(FinalEXP2)
+summary(FinalEXP2)
+plot(FinalEXP2)
+
+
+sample[,6] <- predict(FinalEXP, newdata = test)
+sample[,7] <- exp(predict(FinalEXP2, newdata = test))
+
+```
+
+## 5. MSE 구하기 & Excel 출력
+
+**(1) 각 예측값에 MSE를 구하였다.**
+\
+\
+**(2) 그후 Prediction.xlsx로 출력하였다.**
+\
+\
+**(3) 재미삼아 lm+glm의 결과를 혼합하여 TEST MSE 측정해보았다 **
+\
+\
+
+
+# 결과 
+
+- 개별적으로는 4번에서의 Linear Model이 가장 결과가 좋았다.
+
+- 최대한 TEST MSE를 줄이기 위해 갖가지 노력을 해보았으나 오히려 값만 증가했다.
+
+
+
+```{r content5, include=TRUE, echo=TRUE}
+
+for (i in 1:nrow(sample)) { 
+  if ((abs(sample[i,2]-sample[i,6]) - abs(sample[i,2]-sample[i,7])) >= 0){
+  sample[i,8] <- sample [i,7]
+} else {sample[i,8] <- sample [i,6]}
+}
+
+SqrtTESTMSE <- data.frame(lm=c(0) , glm=c(0), lmwithoutintercept=c(0) , lm2=c(0) , glm2 =c(0) , mix =c(0))
+
+for (i in 1:6) {
+  Error <- ((sample[,2]-sample[,i+2])^2)
+  Error<-na.exclude(Error)
+  SqrtTESTMSE[i]<-sqrt(sum(Error)/nrow(sample))
+  }
+
+SqrtTESTMSE
+
+colnames(sample) <- c("Id", "SalePrice","lm","glm","lmwithoutintercept","lm2","glm2","MIX")
+
+
+Newsample <- sample %>% select("Id", "SalePrice", "lm2")
+
+colnames(Newsample) <- c("Id", "SalePrice","SalePrice(Fitted)")
+
+
+
+view(Newsample)
+
+write.xlsx(Newsample, file = "Prediction.xlsx",
+           sheetName = "Prediction", append = FALSE)
+```
+
+
+
+
+# 그 외 아쉬운 것들
+
+- 지역별로 세분화하여 회귀모형을 하면 어떤 값이 나올까 궁금하였다.
+
+- lm,glm 이외에도 다양한 회귀분석(Ridge Regression, Decision Tree 등)을 배우면 
+
+- 예측값이 나아질 것이라 생각하였다.
+
+
+
+
+

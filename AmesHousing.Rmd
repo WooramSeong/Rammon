@@ -209,7 +209,7 @@ ames_raw %>% count(Neighborhood) %>% filter(n>100) %>%
 <div style="text-align: left"> 비록 North Ames 지역에 집이 가장 많이 있더라도, MnWw는 지역들의 집 개수 순위와 비례하지 않음을 알 수 있다. </div>
 \
 
-
+  
 
 # 그 외  
 

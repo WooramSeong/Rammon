@@ -16,7 +16,7 @@ title: "Rammon's Portfolio"
 *Bermuda.Start <- 50*\
 *Bermuda.End  <- 110  버뮤다의 마지막 구간은 interval과 같거나 작아야함.* 
 
-
+  
 ```{r setup, include=TRUE}
 
 Bermuda_option <-function(CallorPut,Case,Ini.Stock,StrikePrice,year,unit,r,sigma,Bermuda.Start,Bermuda.End){

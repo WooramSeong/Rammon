@@ -33,4 +33,4 @@ Taiwan, China, Japan, Thailand, Indonesia, Vietnam, Spain, France, Italy, IBIZA(
 knitr::opts_chunk$set(echo = FALSE)
 ```
 
-  
+     

@@ -18,8 +18,8 @@ navbar:
       menu:
         - text: "Data Analysis(AmesHosuing)"
           href: AmesHousing.html
-        - text: "Non parametric method"
-          href: NPM.html
+        - text: "Prediction(AmesHousing)"
+          href: AmesHousing2.html
         - text: "Time series"
           href: TS.html
     - icon: fab fa-github
