@@ -1,0 +1,308 @@
+---
+title: "Bermuda option from Black Scholes"
+description: 금융공학::블랙숄즈 모형을 통해 Bermuda Option 가격를 구해보자.
+
+author:
+  - name: WooramSeong
+    url: {}
+date: 04-16-2021
+output:
+  html_document:
+    number_sections: true
+    fig_caption: true
+    toc: true
+    fig_width: 5
+    fig_height: 4
+    theme: cosmo
+    highlight: tango
+    code_folding: show
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+# 준비작업 {.tabset .tabset-fade .tabset-pills}
+
+## 필요 라이브러리
+```{r}
+
+library(tidymodels)
+library(tidyverse)
+library(magrittr)
+library(skimr)
+library(knitr)
+library(naniar)
+library(car)
+library(glmnet)
+library(doParallel)
+theme_set(theme_bw())
+
+```
+
+
+## 파일경로 라이브러리
+```{r}
+file_path <-  "/cloud/project/input"
+files <- list.files(file_path)
+files
+
+train <- read_csv(file.path(file_path, "train.csv"))
+test <- read_csv(file.path(file_path, "test.csv"))
+
+```
+
+
+
+# Data overview (데이터 기본정보) {.tabset .tabset-fade}
+
+## 기본 정보
+
+Train - 총 1460개의 행, 81개의 열로 이루어져있고,  
+Test - 목표 변수인 SalePrice를 제외한 80개의 열로 이루어져있다. 행은 1459개이다.
+
+대략 주어진 데이터를 가지고 50:50의 비율로 회귀분석과 검증을 실시한다.
+
+Train의 정보를 통해 회귀분석을 실행하고, 해당 회귀분석 식이
+Test의 정보에 얼마나 잘 들어맞는지 예측해보자.
+
+## Recipe Code
+```{r}
+all_data <- bind_rows(train, test) %>% 
+  janitor::clean_names()
+names(all_data)[1:81]
+
+housing_recipe <- all_data %>% 
+  recipe(sale_price ~ .) %>%
+  step_rm(id) %>% 
+  step_log(sale_price) %>% 
+  step_modeimpute(all_nominal()) %>% 
+  step_dummy(all_nominal()) %>% 
+  step_meanimpute(all_predictors()) %>%
+  step_normalize(all_predictors()) %>% 
+  ##step_nzv(all_predictors()) %>% 
+  prep(training = all_data)
+
+print(housing_recipe)
+all_data2 <- juice(housing_recipe)
+train_index <- seq_len(nrow(train))
+
+train2 <- all_data2[train_index,]
+test2 <- all_data2[-train_index,]
+train2 %>% 
+  head() %>% 
+  kable()
+
+```
+
+## Validation Set
+```{r}
+set.seed(2021)
+
+validation_set<- validation_split(train2, prop = 0.3)
+#0.3는 분석을 위해 남아 있을 표본의 비율 
+
+validation_set$splits[[1]]$in_id
+
+#439개로 확인됨 
+
+439/nrow(train)
+#0.3 확인
+
+```
+
+## Tune Spec 설정
+```{r}
+tune_spec <- linear_reg(penalty = tune(), mixture = 1) %>%
+  set_engine("glmnet")
+
+lambda_grid <- grid_regular(penalty(), levels = 100)
+
+workflow <- workflow() %>%
+  add_model(tune_spec) %>% 
+  add_formula(sale_price ~ .)
+
+doParallel::registerDoParallel()
+
+tune_result <- workflow %>% 
+  tune_grid(validation_set,
+            grid = lambda_grid,
+            metrics = metric_set(rmse))
+
+```
+
+# coefficient on Best Penalty in Lasso를 구하자. 
+```{r}
+tune_result %>% 
+  collect_metrics()
+
+tune_result %>% show_best()
+
+tune_best <- tune_result %>% select_best(metric = "rmse")
+tune_best$penalty
+
+lasso_model <- 
+  linear_reg(penalty = tune_best$penalty, # tuned penalty
+             mixture = 1) %>% # lasso: 1, ridge: 0
+  set_engine("glmnet")
+
+lasso_fit <- 
+  lasso_model %>% 
+  fit(sale_price ~ ., data = train2)
+
+result_lasso <- lasso_fit %>% 
+  tidy() %>% filter (estimate != 0)%>% select(term,estimate)
+
+result_lasso
+
+result_lasso2 <- lasso_fit %>% 
+  tidy() %>% select(term,estimate)
+
+result_lasso2
+```
+
+
+```{r}
+## coefficient on Best Penalty in Ridge를 구하자.
+
+
+tune_spec2 <- linear_reg(penalty = tune(), mixture = 0) %>%
+  set_engine("glmnet")
+
+workflow2 <- workflow() %>%
+  add_model(tune_spec2) %>% 
+  add_formula(sale_price ~ .)
+
+doParallel::registerDoParallel()
+
+tune_result2 <- workflow2 %>% 
+  tune_grid(validation_set,
+            grid = lambda_grid,
+            metrics = metric_set(rmse))
+
+
+
+
+tune_result2 %>% 
+  collect_metrics()
+
+tune_result2 %>% show_best()
+
+tune_best2 <- tune_result2 %>% select_best(metric = "rmse")
+tune_best2$penalty
+
+Ridge_model <- 
+  linear_reg(penalty = tune_best2$penalty, # tuned penalty
+             mixture = 0) %>% # lasso: 1, ridge: 0
+  set_engine("glmnet")
+
+Ridge_fit <- 
+  Ridge_model %>% 
+  fit(sale_price ~ ., data = train2)
+
+result_Ridge <- Ridge_fit %>% 
+  tidy() %>% filter (estimate != 0)%>% select(term,estimate)
+
+result_Ridge
+
+```
+# 모든 람다(Penalty) 에 따른 계수값을 구해보자. 
+
+```{r}
+coefficient_lambda<- function(x,y) {
+  Ridge_model <- 
+    linear_reg(penalty = x, # tuned penalty
+               mixture = y) %>% # lasso: 1, ridge: 0
+    set_engine("glmnet")
+  
+  Ridge_fit <- 
+    Ridge_model %>% 
+    fit(sale_price ~ ., data = train2)
+  
+  result_Ridge <- Ridge_fit %>% 
+    tidy() %>% select(estimate)
+  
+  result_Ridge
+  
+}
+
+```
+
+# 데이터 정리
+```{r}
+lambda_grid$penalty[85]
+Ridge<-train2[seq_len(nrow(lambda_grid)),]%>%select(-sale_price)
+Lasso<-train2[seq_len(nrow(lambda_grid)),]%>%select(-sale_price)
+
+Intercept<-c(0)
+Ridge<-cbind(Intercept,Ridge)
+Lasso<-cbind(Intercept,Lasso)
+
+Ridge<-cbind(lambda_grid,Ridge)
+Lasso<-cbind(lambda_grid,Lasso)
+
+Ridge_t<-as.data.frame(t(Ridge))
+Lasso_t<-as.data.frame(t(Lasso))
+
+for (i in 1:100) {
+  Ridge_t[-1,i]<-coefficient_lambda(lambda_grid$penalty[i],0)
+  Lasso_t[-1,i]<-coefficient_lambda(lambda_grid$penalty[i],1)
+}
+
+Ridge_coeffi<-as.data.frame(t(Ridge_t))
+Lasso_coeffi<-as.data.frame(t(Lasso_t))
+
+
+ggplot(data=Ridge_coeffi) + 
+  geom_line(aes(x=penalty,y=ms_sub_class), color="1") + 
+  geom_line(aes(x=penalty,y=lot_frontage), color="2") +
+  geom_line(aes(x=penalty,y=lot_area), color="3") +
+  geom_line(aes(x=penalty,y=overall_qual,), color="4") + 
+  geom_line(aes(x=penalty,y=overall_cond), color="5") +
+  geom_line(aes(x=penalty,y=year_built), color="6") +
+  geom_line(aes(x=penalty,y=year_remod_add), color="7")+
+  geom_line(aes(x=penalty,y=mas_vnr_area), color="8")+
+  geom_line(aes(x=penalty,y=bsmt_fin_sf1), color="9")+
+  geom_line(aes(x=penalty,y=bsmt_fin_sf2), color="10")+
+  geom_line(aes(x=penalty,y=bsmt_unf_sf), color="11")+ 
+  labs(title="Coefficients in Ridge", x ="Lambda", y = "Coefficients")
+
+ggplot(data=Lasso_coeffi) + 
+  geom_line(aes(x=penalty,y=ms_sub_class), color="1") + 
+  geom_line(aes(x=penalty,y=lot_frontage), color="2") +
+  geom_line(aes(x=penalty,y=lot_area), color="3") +
+  geom_line(aes(x=penalty,y=overall_qual,), color="4") + 
+  geom_line(aes(x=penalty,y=overall_cond), color="5") +
+  geom_line(aes(x=penalty,y=year_built), color="6") +
+  geom_line(aes(x=penalty,y=year_remod_add), color="7")+
+  geom_line(aes(x=penalty,y=mas_vnr_area), color="8")+
+  geom_line(aes(x=penalty,y=bsmt_fin_sf1), color="9")+
+  geom_line(aes(x=penalty,y=bsmt_fin_sf2), color="10")+
+  geom_line(aes(x=penalty,y=bsmt_unf_sf), color="11")+
+  labs(title="Coefficients in Lasso", x ="Lambda", y = "Coefficients")
+
+
+```
+
+위에서 만든 데이터 테이블을 토대로 그래프를 그려보았다. 아직 변수를 다 담는 방법을 몰라 11개 변수를 선정하여 넣었다.
+\
+\
+
+Lasso 의 경우 Penalty가 증가할수록 선정한 모든 변수들이 나중에는 모두 0으로 수렴하는 것을 알 수 있다.
+\
+\
+Lasso 와 달리 Ridge 에서는 완전 0으로 수렴하는 경우가 없는 것을 확인할 수 있다.
+
+```{r eval=FALSE}
+write.csv(Ridge_coeffi, row.names = FALSE,
+          "Ridge.csv")
+
+write.csv(Lasso_coeffi, row.names = FALSE,
+          "Lasso.csv")
+```
+
+
+
+
+

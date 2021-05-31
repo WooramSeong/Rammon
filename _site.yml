@@ -12,9 +12,9 @@ navbar:
       href: index.html
     - text: "My Info"
       href: about.html
-    - text: "Portfolio"
+    - text: "Rammon's Portfolio"
       href: portfolio.html
-    - text: "Assingnment"
+    - text: "A1ssingnment"
       menu:
         - text: "Data Analysis(AmesHosuing)"
           href: AmesHousing.html
