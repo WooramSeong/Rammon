@@ -1,0 +1,145 @@
+---
+title: "Gradient Descent"
+description: 경사하강법을 통해 최적의 모수를 찾아내자.
+
+author:
+  - name: WooramSeong
+date: 05-14-2021
+output:
+  distill::distill_article:
+    self_contained: false
+    html_document:
+    number_sections: true
+    fig_caption: true
+    toc: true
+    fig_width: 5
+    fig_height: 4
+    theme: cosmo
+    highlight: tango
+    code_folding: code
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r library, include=FALSE}
+library(tidymodels)
+
+library(tidyverse) 
+
+library(skimr)
+
+library(knitr)
+```
+
+```{r load table, include=FALSE}
+
+  
+  file_path <-  "/cloud/project/input"
+  
+  files <-list.files(file_path)
+  
+  files
+  example_data <- read_csv(file.path(file_path, "Table1.csv"))
+  colnames(example_data)
+                    
+```
+
+## 2. Maximum Likelihood Estimator of Poisson Regression
+
+(1)
+
+
+```{r code1, include=TRUE}
+model<-glm(Claims ~ Gender + Territory,
+family = poisson(link=log), data = example_data)
+model$coefficients
+
+
+```
+
+(2)
+- Define Likelihood and Loglikelihood function
+\
+\
+*Likelihood function* : $\prod_{i=1}^n  \frac{e^{-\lambda} + \lambda^{y_i}} {y_i!}$
+\
+\
+*Loglikelihood function* : $\sum_{i=1}^n  -\lambda + y_i ln \lambda - ln y_i!$
+\
+\
+
+- Calculate gradient of Loglikelihood function with repect to $\beta$
+\
+\
+$\lambda=e^{x_i^{T}\beta}$
+\
+\
+$\displaystyle \frac{\partial -l(\beta)}{\partial \beta} = \sum_{i=1}^n (y_i - e^{x_i^{T}\beta}) x_i^{T}$
+
+
+```{r code11, include=FALSE}
+example_data$Gender[example_data$Gender=="M"] <-1
+example_data$Gender[example_data$Gender=="F"] <-0
+example_data$Territory[example_data$Territory=="West"]<-1
+example_data$Territory[example_data$Territory=="East"]<-0
+example_data
+
+example_data$Gender<-as.numeric(example_data$Gender)
+example_data$Territory<-as.numeric(example_data$Territory)
+
+class(example_data$Gender)
+
+```
+
+
+```{r code2, include=TRUE}
+set.seed(2022)
+beta <- rnorm(3)
+
+sigma_f<-function(x){exp(x)}
+
+
+nll <- function(beta){
+  y<- example_data$Claims
+  pi_vec <- sigma_f(matrix(cbind(1, example_data$Gender,
+                                    example_data$Territory),ncol = 3) %*% matrix(beta, nrow = 3))
+  -sum((-pi_vec)+y*log(pi_vec)-log(factorial(y)))
+}
+```
+
+```{r code3, include=TRUE}
+grad_nll <- function(beta){
+y<- example_data$Claims
+xbeta <- matrix(cbind(1,example_data$Gender,example_data$Territory),ncol=3) %*% beta
+pi_vec <- sigma_f(xbeta)
+-colSums(as.vector(y-pi_vec)*matrix(cbind(1,example_data$Gender,example_data$Territory),ncol=3))
+}
+grad_nll(beta)
+```
+
+```{r code4, include=TRUE}
+set.seed(2022)
+beta<-rnorm(3)
+iter_n <-1
+improve <-1
+conv_threshold <- 1e-15
+max_n <- 100000
+result <- matrix(0, nrow = max_n, ncol = 3)
+while ((improve > conv_threshold) & (iter_n<= max_n)) {
+  beta_new <- beta - 0.001 * grad_nll(beta)
+  improve <- abs(nll(beta)-nll(beta_new))
+  result[iter_n,]<- beta_new
+  beta <- beta_new
+  iter_n <- iter_n +1
+}
+
+result[iter_n-1,]
+model$coefficients
+```
+
+
+
+
+

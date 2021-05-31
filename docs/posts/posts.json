@@ -1,5 +1,22 @@
 [
   {
+    "path": "posts/4. 경사하강법을 통한 최적의 Parameter 계산/",
+    "title": "Gradient Descent",
+    "description": "경사하강법을 통해 최적의 모수를 찾아내자.",
+    "author": [
+      {
+        "name": "WooramSeong",
+        "url": {}
+      }
+    ],
+    "date": "2021-05-14",
+    "categories": [],
+    "contents": "\n\nContents\n2. Maximum Likelihood Estimator of Poisson Regression\n\n2. Maximum Likelihood Estimator of Poisson Regression\n\n\n\ncode\n\nmodel<-glm(Claims ~ Gender + Territory,\nfamily = poisson(link=log), data = example_data)\nmodel$coefficients\n\n\n  (Intercept)       GenderM TerritoryWest \n   -0.9808293     0.5108256     0.5108256 \n\n\nDefine Likelihood and Loglikelihood functionLikelihood function : \\(\\prod_{i=1}^n \\frac{e^{-\\lambda} + \\lambda^{y_i}} {y_i!}\\)Loglikelihood function : \\(\\sum_{i=1}^n -\\lambda + y_i ln \\lambda - ln y_i!\\)\nCalculate gradient of Loglikelihood function with repect to \\(\\beta\\)\\(\\lambda=e^{x_i^{T}\\beta}\\)\\(\\displaystyle \\frac{\\partial -l(\\beta)}{\\partial \\beta} = \\sum_{i=1}^n (y_i - e^{x_i^{T}\\beta}) x_i^{T}\\)\n\n\ncode\n\nset.seed(2022)\nbeta <- rnorm(3)\n\nsigma_f<-function(x){exp(x)}\n\n\nnll <- function(beta){\n  y<- example_data$Claims\n  pi_vec <- sigma_f(matrix(cbind(1, example_data$Gender,\n                                    example_data$Territory),ncol = 3) %*% matrix(beta, nrow = 3))\n  -sum((-pi_vec)+y*log(pi_vec)-log(factorial(y)))\n}\n\n\n\n\n\ncode\n\ngrad_nll <- function(beta){\ny<- example_data$Claims\nxbeta <- matrix(cbind(1,example_data$Gender,example_data$Territory),ncol=3) %*% beta\npi_vec <- sigma_f(xbeta)\n-colSums(as.vector(y-pi_vec)*matrix(cbind(1,example_data$Gender,example_data$Territory),ncol=3))\n}\ngrad_nll(beta)\n\n\n[1]  5.601110 -1.786728 -1.061560\n\n\n\ncode\n\nset.seed(2022)\nbeta<-rnorm(3)\niter_n <-1\nimprove <-1\nconv_threshold <- 1e-15\nmax_n <- 100000\nresult <- matrix(0, nrow = max_n, ncol = 3)\nwhile ((improve > conv_threshold) & (iter_n<= max_n)) {\n  beta_new <- beta - 0.001 * grad_nll(beta)\n  improve <- abs(nll(beta)-nll(beta_new))\n  result[iter_n,]<- beta_new\n  beta <- beta_new\n  iter_n <- iter_n +1\n}\n\nresult[iter_n-1,]\n\n\n[1] -0.9808283  0.5108249  0.5108249\n\ncode\n\nmodel$coefficients\n\n\n  (Intercept)       GenderM TerritoryWest \n   -0.9808293     0.5108256     0.5108256 \n\n\n\n\n",
+    "preview": {},
+    "last_modified": "2021-05-31T11:21:22+00:00",
+    "input_file": "Gradient-Descent.utf8.md"
+  },
+  {
     "path": "posts/3. Ridge & Lasso /",
     "title": "Rigde-Lasso as to changing penalty values",
     "description": "Penalty에 따라 Lasso Ridge 계수가 어떻게 바뀌는지 살펴보자.",
