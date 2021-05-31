@@ -1,13 +1,14 @@
 ---
-title: "Bermuda option from Black Scholes"
-description: 금융공학::블랙숄즈 모형을 통해 Bermuda Option 가격를 구해보자.
+title: "Rigde-Lasso as to changing penalty values"
+description: Penalty에 따라 Lasso Ridge 계수가 어떻게 바뀌는지 살펴보자.
 
 author:
   - name: WooramSeong
-    url: {}
 date: 04-16-2021
 output:
-  html_document:
+  distill::distill_article:
+    self_contained: false
+    html_document:
     number_sections: true
     fig_caption: true
     toc: true
@@ -15,7 +16,7 @@ output:
     fig_height: 4
     theme: cosmo
     highlight: tango
-    code_folding: show
+    code_folding: code
 ---
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -62,8 +63,6 @@ test <- read_csv(file.path(file_path, "test.csv"))
 Train - 총 1460개의 행, 81개의 열로 이루어져있고,  
 Test - 목표 변수인 SalePrice를 제외한 80개의 열로 이루어져있다. 행은 1459개이다.
 
-대략 주어진 데이터를 가지고 50:50의 비율로 회귀분석과 검증을 실시한다.
-
 Train의 정보를 통해 회귀분석을 실행하고, 해당 회귀분석 식이
 Test의 정보에 얼마나 잘 들어맞는지 예측해보자.
 
@@ -97,6 +96,9 @@ train2 %>%
 ```
 
 ## Validation Set
+
+
+
 ```{r}
 set.seed(2021)
 
@@ -133,6 +135,11 @@ tune_result <- workflow %>%
 ```
 
 # coefficient on Best Penalty in Lasso를 구하자. 
+Validation set 을 설정하여 Root Mean Square (RMSE)가 가장 낮을 때의 람다값을 산출한 후 그에 따른 coefficient 값을 구하였다. Train data 중에서 30% 만 Validation set으로 남겨두었다. 
+
+\
+Coefficient 값을 산출하는 자체 함수를 만든 후 for 반복문을 적용시켰다. (람다의 표본은 100 개로 설정하였다)
+
 ```{r}
 tune_result %>% 
   collect_metrics()
@@ -230,6 +237,10 @@ coefficient_lambda<- function(x,y) {
 ```
 
 # 데이터 정리
+
+데이터 정리하는 과정이 가장 힘들었는데 관련 코드를 첨부하도록 하겠다.
+다음은 데이터를 만들기 위해 내가 정의한 함수이다.
+
 ```{r}
 lambda_grid$penalty[85]
 Ridge<-train2[seq_len(nrow(lambda_grid)),]%>%select(-sale_price)

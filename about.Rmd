@@ -29,8 +29,10 @@ SGH Warsaw school of Economics / 2018 (Exchange Student) \
 
 # I'm Traveler
 Taiwan, China, Japan, Thailand, Indonesia, Vietnam, Spain, France, Italy, IBIZA(?_?), Poland, United Kingdom, Czech, Austria, Croatia, Hungary, Egypt
-```{r setup, include=FALSE}
+```{r setup, include=FALSE, echo=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
 ```
+
+
 
      
