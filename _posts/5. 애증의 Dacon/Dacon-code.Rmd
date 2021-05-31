@@ -1,0 +1,978 @@
+---
+title: "애증의 Dacon"
+description: How to execute Random Forest, Logistic, XGboost, LightGBM Model?
+
+author:
+  - name: WooramSeong
+date: 05-31-2021
+output:
+  distill::distill_article:
+    self_contained: false
+    html_document:
+    number_sections: true
+    fig_caption: true
+    toc: true
+    fig_width: 5
+    fig_height: 4
+    theme: cosmo
+    highlight: tango
+    code_folding: code
+---
+
+이번 글은 코드를 실행하지는 않으려고 한다.
+왜냐하면 너무 오래걸리기 때문이죠..
+
+코드만 감상하시길 바랍니다.
+
+
+# 필요 라이브러리
+
+```{r eval=FALSE}
+
+library(parsnip)
+library(xgboost)
+library(magrittr)
+library(tidymodels)
+library(tidyverse) 
+library(skimr)
+library(knitr)
+library(kableExtra)
+library(ranger)
+library(yardstick)
+library(stacks)
+library(randomForestExplainer)
+library(corrplot)
+library(tictoc)
+library(nnet)
+#install.packages('devtools')
+#remotes::install_github("curso-r/treesnip")
+library(treesnip)
+#devtools::install_github("curso-r/rightgbm")
+#rightgbm::install_lightgbm()  
+library(lightgbm)
+
+```
+
+# 데이터 불러오기
+  
+```{r eval=FALSE}
+  file_path <- "C:/Users/GIGABYTE/Desktop/응용통계학/Dacon"
+
+  
+  files <-list.files(file_path)
+  
+  files
+
+  #각 변수의 이름을 `janitor` 패키지로 말끔하게 바꿔준다.
+  
+  
+  train <- read_csv(file.path(file_path, "train.csv"),
+                    col_types = cols(
+                      credit = col_factor(levels = c("0.0", "1.0", "2.0"))
+                    )) %T>% 
+    suppressMessages() %>% 
+    janitor::clean_names()
+  test <- read_csv(file.path(file_path, "test.csv")) %T>%
+    suppressMessages() %>% 
+    janitor::clean_names()
+  
+```  
+ 
+# 데이터 기본정보 확인
+```{r eval=FALSE}  
+train %>% 
+      head() %>% 
+       kable() %>% 
+     kableExtra::kable_styling("striped") %>% 
+     kableExtra::scroll_box(width = "100%")
+
+```  
+  
+#각 데이터 셋의 변수명을 살펴보자. 
+  
+먼저 `test` 데이터에는 우리가 예측하고 싶은 변수인 `credit` 변수가 들어있지 않은 것을 알 수 있다. 
+  
+  
+데이터를 훑어보기 위해서 `skim()` 함수를 이용하자. 이 함수는 데이터에 들어있는 변수들을 타입 별로 분석해서 리포트를 작성해준다.
+  
+#  skim(train)
+
+결과를 살펴보자. 먼저 결측치가 상대적으로 많이 없는 착한? 데이터이다. character 변수의 complete rate를 살펴보면 모든 변수가 1이고, `occyp_type` 변수만이 결측치가 8171개가 존재하는 것을 알 수 있다. 또한 고맙게도 numeric 변수의 결측치는 하나도 없다!😆
+  
+  
+같은 함수를 사용해서 `test` 셋을 보면 똑같은 패턴을 가지고 있는 것을 알 수 있다.
+  
+#  skim(test)
+  
+```{r eval=FALSE} 
+# 시각화
+
+  #베이스 라인을 잡은 문서이니 간단하게 시각화 하나만 하고 넘어가자. (코드를 응용해서 다른 변수에 대한 상관 관계를 볼 수 있을 것이다.)
+  
+
+pre_train<-train[,c(-1,-17)]
+
+pre_train %<>% mutate(income_Per_Familymember = income_total/family_size)
+
+#변수 중요도가 높은 Begin_month, income_total, yrs_birth, income_PM
+
+
+#Preliminary_fit2 <- ranger(credit ~ ., data = pre_train , importance = "impurity_corrected")
+
+#pvalues<-importance_pvalues(Preliminary_fit2, method = "janitza") 
+
+#pvalues
+
+
+
+#p-value가 0에 가까운 Begin_month, days_birth, days_employed 을 발견
+
+
+#train %>%
+  
+#  ggplot(aes(x = factor(credit), y = income_total)) +
+  
+#  geom_boxplot()
+
+## Credit이 바뀌어도 income_total의 유의미한 결과가 보이지 않음
+
+
+#train %>%
+  
+#  ggplot(aes(x = factor(credit), y = days_birth)) +
+  
+#  geom_boxplot()
+
+#train %>%
+  
+#  ggplot(aes(x = factor(credit), y = begin_month)) +
+  
+#  geom_boxplot()
+
+
+train %>%
+  
+  ggplot(aes(x = factor(credit), y = days_employed)) +
+  
+  geom_boxplot()
+
+
+## 데이터 365,243 처리를 어떻게 해야 하는가 365,243,을 제외한 최댓값 or 최솟값 or 중앙값
+
+
+train %>% filter(days_employed>300000)
+
+train %>% filter(days_employed>300000)%>%select(income_type,days_employed)
+
+min(Days_employed)
+
+max(Days_employed)
+
+median(Days_employed)
+
+train$days_employed[train$days_employed == 365243] <- -1977
+
+test$days_employed[test$days_employed == 365243] <- -1977
+
+## Credit이 바뀌어도 income_total의 유의미한 결과가 보이지 않음
+
+post_train<-train
+post_train$credit<-as.numeric(post_train$credit)
+corrplot(cor(post_train[,c(20,19,12,11,6)]))
+
+#begin_Month 데이터 전처리가 핵심인거 같다.
+
+train %>%
+  
+ ggplot(aes(x = factor(credit), y = income_total)) +
+  
+  geom_boxplot() +
+  
+  facet_grid(. ~ occyp_type)
+
+dim(train)
+
+min(train$income_total)
+
+
+train %<>% filter(income_total<1250000 & income_total>27000)
+
+dim(train)
+
+
+
+colnames(train)
+
+train %>%
+  
+ ggplot(aes(x = factor(credit), y = begin_month)) +
+  
+  geom_boxplot() +
+  
+  facet_grid(. ~ occyp_type)
+
+
+
+#  train %>%
+  
+#  ggplot(aes(x = factor(credit), y = begin_month)) +
+  
+#  geom_boxplot() +
+  
+#  facet_grid(. ~ income_type)
+
+  
+  train %>%
+    
+    ggplot(aes(x = factor(credit), y = begin_month)) +
+    
+    geom_boxplot() +
+    
+    facet_grid(. ~ income_type)
+
+
+train %>%
+
+ ggplot(aes(x = factor(credit), y = family_size)) +
+
+  geom_boxplot() 
+
+train %>% select(income_type,begin_month) %>% filter(income_type=="Student")
+train %>% select(credit,occyp_type,begin_month) %>% filter(occyp_type=='HR staff' & credit == "1.0") %>% arrange(desc(begin_month))
+train %>% select(credit,occyp_type,begin_month) %>% filter(occyp_type=='Realty agents' & credit == "1.0") %>% arrange(begin_month)
+train %>% select(credit,occyp_type,begin_month) %>% filter(occyp_type=='Waiters/barmen staff' & credit == "1.0") %>% arrange(begin_month)
+
+
+
+intersect(which(train$occyp_type == 'HR staff'),which(train$begin_month == -8))
+intersect(which(train$occyp_type == 'Realty agents'& train$credit== "1.0"),which(train$begin_month == -53))
+intersect(which(train$occyp_type == 'Realty agents' & train$credit== "1.0"),which(train$begin_month == -43))
+intersect(which(train$occyp_type == 'Waiters/barmen staff' & train$credit== "1.0"),which(train$begin_month == -56))
+intersect(which(train$income_type == 'Student'),which(train$begin_month == -60))
+
+#2990,11276,15649,20515,25602, 행을 제거하자
+
+train<-train[c(-2990,-11276,-15649,-20515,-25602),]
+
+
+## income_total이 상관계수가 0에 가까워서 사람수로 나누어 평균 수입으로 변수를 만들려 했으나 상관계수가 역시나 적었다. 
+#train$credit<-as.numeric(train$credit)
+#train %<>% mutate(income_PM = income_total/family_size)
+#train$income_PM
+#sum(is.na(train$income_PM))
+#cor(train[,c(20,19,12,11,6,21)])
+#corrplot(cor(train[,c(20,19,12,11,21)]))
+
+#목표 변수인 credit은 낮을 수록 높은 신용의 신용카드 사용자를 의미 한다고 한다. Commercial associate 인 경우 신용이 제일 낮은 그룹의 수입의 중앙값이 제일 높다. 돈을 많이 벌수록 돈 갚은 개념이 없어지는 것인가? 재미있는 현상이다. 학생 클래스의 경우 train 데이터에 셋이 많이 없다는 것을 알 수 있다. 추후에 다른 클래스로 통합을 시키는 것이 좋을 것이다.
+```
+
+
+## 중복값을 제거해보자. 
+```{r eval=FALSE} 
+birth_table<-as.data.frame(table(train$days_birth))  
+birth_table%>%filter(Freq>10)%>% arrange(desc(Freq))
+
+#days_birth -12676,-15519,-14667 탐색!!
+
+a1<-train%>%filter(days_birth == -12676) %>% select(index,days_employed,income_total,begin_month,days_birth,family_size,credit)%>%arrange(days_employed,income_total,begin_month,index)
+a2<-train%>%filter(days_birth == -15519) %>% select(index,days_employed,income_total,begin_month,days_birth,family_size,credit)%>%arrange(days_employed,income_total,begin_month,index)
+a3<-train%>%filter(days_birth == -14667) %>% select(index,days_employed,income_total,begin_month,days_birth,family_size,credit)%>%arrange(days_employed,income_total,begin_month,index)
+
+train$credit<-as.numeric(train$credit)
+
+#train_max<-train%>%group_by(days_employed,gender,income_total,credit,family_size,child_num) %>% mutate(begin_month=min(begin_month))
+#train_min<-train%>%group_by(days_employed,gender,income_total,credit,family_size,child_num) %>% mutate(begin_month=max(begin_month))
+#train_median<-train%>%group_by(days_employed,gender,income_total,credit,family_size,child_num) %>% mutate(begin_month=median(begin_month))
+
+#corrplot(cor(train_max[,c(20,19,12,11,6)]))
+#corrplot(cor(train_min[,c(20,19,12,11,6)]))
+#corrplot(cor(train_median[,c(20,19,12,11,6)]))
+#corrplot(cor(train[,c(20,19,12,11,6)]))
+
+
+#데이터 정렬 행번호가 가장 빠른 애들만 남게 되기 때문에 발급일이 가장 오래된 것들을 남기기로 하자.
+colnames(train)
+
+#train_order <- train[order(train[,'begin_month'],decreasing = FALSE), ]
+#train_order <- train_order[!duplicated(train[,c('days_birth','work_phone','phone','reality','house_type','car','days_employed','edu_type','occyp_type','child_num','income_total','income_type','family_size','begin_month','credit')]),]
+#train_order$credit<-as.numeric(train_order$credit)
+#corrplot(cor(post_train[,c(20,19,12,11,6)]))
+#corrplot(cor(train_order[,c(20,19,12,11,6)]))
+
+#이번에는 최근 발급일을 기준으로 남기기로 하자.
+#train_order <- train[order(train[,'begin_month'],decreasing = TRUE), ]
+#train_order <- train_order[!duplicated(train[,c('days_birth','work_phone','phone','reality','house_type','car','days_employed','edu_type','occyp_type','child_num','income_total','income_type','family_size','begin_month','credit')]),]
+#train_order$credit<-as.numeric(train_order$credit)
+#corrplot(cor(post_train[,c(20,19,12,11,6)]))
+#corrplot(cor(train_order[,c(20,19,12,11,6)]))
+
+## Begin_month 중복값 중 최근 발급일을 남긴 결과 상관 관계가 높아지는 결과가 나타났다.
+
+#train_order_inc <- train[order(train[,'begin_month'],decreasing = FALSE), ]
+#train_order_inc <- train_order_inc[!duplicated(train[,c('gender','edu_type','flag_mobil','email','days_birth','work_phone','phone','reality','house_type','car','days_employed','edu_type','occyp_type','child_num','income_total','income_type','family_size','credit')]),]
+#train_order_dec <- train[order(train[,'begin_month'],decreasing = TRUE), ]
+#train_order_dec <- train_order_dec[!duplicated(train[,c('gender','edu_type','flag_mobil','email','days_birth','work_phone','phone','reality','house_type','car','days_employed','edu_type','occyp_type','child_num','income_total','income_type','family_size','credit')]),]
+
+#train_union<-union(train_order_dec,train_order_inc)
+#train_order$credit<-as.numeric(train_order$credit)
+#train_order_inc$credit<-as.numeric(train_order_inc$credit)
+#train_order_dec$credit<-as.numeric(train_order_dec$credit)
+#train_union$credit<-as.numeric(train_union$credit)
+
+#corrplot(cor(post_train[,c(20,19,12,11,6)]))
+#corrplot(cor(train_order_inc[,c(20,19,12,11,6)]))
+#corrplot(cor(train_order_dec[,c(20,19,12,11,6)]))
+#corrplot(cor(train_union[,c(20,19,12,11,6)]))
+#train_order_dec
+
+#train<-train_union
+## 재밌는점은 상관관계가 높다고 해서 mean_log_loss가 낮아지는건 아님
+## 오히려 상관관계가 높은 쪽에서 log loss 값이 더 크게 나옴 ~_~
+
+
+
+
+# 전처리 하기
+#`tidymodels`에서는 전처리를 할 때 `recipe` 라는 패키지를 사용한다. 이 패키지에는 전처리를 하는 방법을 음식 레피시 처럼 적어놓는다고 생각하면 쉽다.
+## 전처리 사항들
+
+
+
+# 결과값인 credit 변수와 character 타입의 변수들을 factor 변수로 바꿔주자.
+
+# 나이와 직업을 가진 기간을 년수로 바꿔준다.
+```
+
+# `recipe`를 통한 전처리 입력
+```{r eval=FALSE} 
+credit_recipe <- train %>% 
+  
+  recipe(credit ~ .) %>% 
+  
+  # age and employment period in yrs
+  
+  #step_mutate(yrs_birth = -ceiling(days_birth/365),
+              
+  #           yrs_employed = -ceiling(days_employed/365)) %>% 
+  
+  step_rm(index,flag_mobil, child_num) %>%
+  
+  #child_num은 family size랑 상관계수가 매우 높아 제거해주었다. 
+  
+  #flag_mobil은 다 값이 1로 동일하여 제거해주었다.
+  
+  step_unknown(occyp_type) %>% 
+  
+  step_integer(all_nominal(), -all_outcomes()) %>% 
+  
+  step_corr(all_predictors(), -all_outcomes()) %>% 
+  
+  step_scale(all_predictors(), -all_outcomes()) %>%
+  
+  step_nzv(all_predictors(), -all_outcomes()) %>%
+  
+  step_center(all_predictors(), -all_outcomes()) %>% 
+  
+  prep(training = train)
+
+
+
+print(credit_recipe)
+```
+
+# `juice`를 통한 전처리 즙짜기
+```{r eval=FALSE} 
+
+#`juice()` 함수를 통해서 recipe에 입력된 전처리를 짜낸 데이터를 얻어온다.
+
+train2 <- juice(credit_recipe)
+test2 <- bake(credit_recipe, new_data = test)
+head(train2)
+head(test2)
+
+train2$credit<-as.factor(train2$credit)
+
+
+#다음과 같이 결측치 없이 잘 코딩된 데이터를 얻었다는 것을 확인 할 수 있다.
+
+
+
+
+train2 %>%
+    
+  map_df(~sum(is.na(.))) %>%
+  
+  pivot_longer(cols = everything(),
+               
+               names_to = "variable",
+               
+               values_to = "na_count") %>% 
+  
+  filter(na_count > 0)
+
+```
+
+# 튜닝 준비하기
+
+`validation_split()` 함수를 사용하여 평가셋을 분리한다. 한 단계 더 나아간 cross validation은 `vfold_cv()`함수에서 제공하니 찾아보도록 하자.
+
+
+## 5 fold vs 10 fold를 실행해보자. 
+```{r eval=FALSE} 
+
+set.seed(2002)
+
+
+validation_split <- vfold_cv(v=10, train2, strata = credit)
+
+#validation_split <- validation_split(train2, prop = 0.3,   strata = credit)
+
+validation_split
+```
+
+
+## stacking 준비하기
+```{r eval=FALSE} 
+ctrl_res <- control_stack_resamples()
+ctrl_grid <- control_stack_grid()
+```
+
+
+##랜덤 포레스트를 사용할 것이고, mtry와 min_n을 어떻게 정할지를 평가셋을 통해서 결정할 것이므로, `tune()`를 사용해서 tidymodels에게 알려주도록 한다.
+
+```{r eval=FALSE} 
+
+
+cores <- parallel::detectCores() -1
+
+cores
+
+
+
+tune_spec <- rand_forest(mtry = tune(),
+                         
+                         min_n = tune(),
+                         
+                         trees = 1000) %>% 
+  
+  set_engine("ranger",
+             
+             num.threads = cores) %>% 
+  
+  set_mode("classification")
+
+# from param tune
+
+#param_grid <- tibble(mtry = c(4,4,4,4), min_n=c(3,4,5,6)) # mtry=3으로 고정시키자
+param_grid <- grid_random(finalize(mtry(), x = train2[,-1]), min_n(),size = 5000, filter = 2<mtry & mtry<5 & min_n<15 & 2<min_n)
+param_grid
+
+# 워크 플로우 설정
+
+workflow <- workflow() %>%
+  
+  add_model(tune_spec) %>% 
+  
+  add_formula(credit ~ .)
+
+
+# 모델 튜닝 with tune_grid()
+
+
+
+# Tuning trees
+
+tic()
+
+tune_result <- workflow %>% 
+  
+  tune_grid(validation_split,
+            grid = param_grid,
+            metrics = metric_set(mn_log_loss),
+            control = ctrl_res)
+
+toc()
+
+
+tune_result %>% 
+  
+  collect_metrics()
+
+
+
+# 튜닝결과 시각화
+
+tune_result %>%
+  
+  collect_metrics() %>%
+  
+  filter(.metric == "mn_log_loss") %>% 
+  
+  ggplot(aes(mtry, mean, color = .metric)) +
+  
+  geom_line(size = 1.5) +
+  
+  scale_x_log10() +
+  
+  theme(legend.position = "none") +
+  
+  labs(title = "Mean Log loss")
+
+
+
+tune_result %>% show_best()
+tune_best <- tune_result %>% select_best(metric = "mn_log_loss")
+
+tune_best$mtry
+
+tune_best$min_n
+
+
+```
+1차시도 (3,5), (3,6), (3,7), (3,8), (3,4) , minimum mean log loss  0.708 5 fold cv 최근 신용카드 발급 기록만 남기기
+<br/>
+2차시도 (3,5), (3,7), (3,6), (3,4), (3,8) , minimum mean log loss  0.706 5 fold cv 첫번째 신용카드 발급 기록만 남기기
+<br/>
+3차시도 (3,4), (3,5), (3,7), (3,6), (3,8) , minimum mean log loss  0.698 10 fold CV + 첫번째 신용카드 발급 기록만 남기기
+<br/>
+4차시도 (4,4), (4,5) , minimum mean log loss  0.404 5 fold CV + 동일 고객이 여러번 발급할 경우 begin_month를 가장 오래된 날짜로 통일 
+<br/>
+5차시도 (4,4), (4,5) , minimum mean log loss  0.404 5 fold CV + 동일 고객이 여러번 발급할 경우 begin_month를 가장 늦은 날짜로 통일 
+<br/>
+6차시도 (3,5), (3,6) , minimum mean log loss  0.697 10 fold CV + 변주 제거를 index 랑 flag_mobil 만 함  
+
+
+## 튜닝된 모델 학습하기
+```{r eval=FALSE} 
+rf_model <- 
+  
+  rand_forest(mtry = tune_best$mtry,
+              
+              min_n = tune_best$min_n,
+              
+              trees = 1000) %>% 
+  
+  set_engine("ranger", seed = 2022, 
+             
+             num.threads = cores, importance = 'impurity') %>% 
+  
+  set_mode("classification")
+
+
+rf_model2 <- 
+  
+  rand_forest(mtry = tune_best$mtry,
+              
+              min_n = tune_best$min_n,
+              
+              trees = 1000) %>% 
+  
+  set_engine("ranger", seed = 2023, 
+             
+             num.threads = cores, importance = 'impurity') %>% 
+  
+  set_mode("classification")
+
+rf_model3 <- 
+  
+  rand_forest(mtry = tune_best$mtry,
+              
+              min_n = tune_best$min_n,
+              
+              trees = 1000) %>% 
+  
+  set_engine("ranger", seed = 2024, 
+             
+             num.threads = cores, importance = 'impurity') %>% 
+  
+  set_mode("classification")
+
+
+
+tictoc::tic()
+
+rf_fit <- 
+  
+  rf_model %>% 
+  
+  fit(credit ~ ., data = train2)
+
+tictoc::toc()
+
+rf_fit2 <- 
+  
+  rf_model2 %>% 
+  
+  fit(credit ~ ., data = train2)
+
+rf_fit3 <- 
+  
+  rf_model3 %>% 
+  
+  fit(credit ~ ., data = train2)
+
+rf_fit
+rf_fit2
+rf_fit3
+```
+Ranger result
+
+
+ Type:                             Probability estimation 
+
+ Number of trees:                  1000 
+
+ Sample size:                      24806 
+
+ Number of independent variables:  16 
+
+ Mtry:                             3 
+
+ Target node size:                 5 
+
+ Variable importance mode:         impurity 
+
+ Splitrule:                        gini 
+
+ OOB prediction error (Brier s.):  0.2288811 
+
+#Stacking 을 위해 logitstic model을 돌려보자. 
+```{r eval=FALSE} 
+logit_spec <- multinom_reg(penalty = tune(),
+                          mixture = tune()) %>%
+  set_engine("glmnet")%>%
+  set_mode("classification")
+  
+
+lambda_grid <- grid_regular(penalty(), 
+                            mixture(),
+                            levels = list(penalty = 100,
+                                          mixture = 25))
+lambda_grid
+
+logit_workflow <-workflow() %>% 
+  add_model(logit_spec) %>%
+  add_formula(credit~.)
+
+logit_result<- logit_workflow %>%
+  tune_grid(validation_split,
+            grid=lambda_grid,
+            metrics = metric_set(mn_log_loss),
+            control = ctrl_res) 
+
+logit_result %>% collect_metrics()
+logit_result %>% show_best()
+```
+
+1차시도 Penalty 0.00870 Mixture 0.111, Penalty 0.00775 Mixture 0.111, minimum mean log loss  0.859 10-fold CV 첫번째 신용카드 발급 기록만 남기기
+<br/>
+2차시도 Penalty 0.00955 Mixture 0.0833, Penalty 0.00775 Mixture 0.111, minimum mean log loss  0.863 10-fold CV 신용카드 중복 제거 X
+<br/>
+
+
+**로지스틱 회귀 모형은 중복을 제거하는게 낫고, 랜덤포레스트 모형은 중복값을 삭제 하지 않는게 mean log loss가 더 잘 나옴** 
+
+
+```{r eval=FALSE} 
+logit_tune_best <- logit_result %>% select_best(metric="mn_log_loss")
+logit_tune_best$penalty
+
+logit_model <- multinom_reg(penalty = logit_tune_best$penalty,
+                  mixture = logit_tune_best$mixture) %>% 
+                  set_engine("glmnet", seed = 2022, num.threads = cores) %>%            
+                  set_mode("classification")
+
+logit_fit <- logit_model %>% fit(credit~., data = train2)
+logit_fit
+
+logit_pred <- predict(logit_fit, test2, type="prob")
+logit_pred
+```
+
+
+#XGboost 를 실행해보자
+
+```{r eval=FALSE}
+
+xgb_spec <- boost_tree(
+  
+  trees = 1000, 
+  
+  tree_depth = tune(), min_n = tune(), 
+  
+  loss_reduction = tune(),                     ## first three: model complexity
+  
+  sample_size = tune(), mtry = tune(),         ## randomness
+  
+  learn_rate = tune(),                         ## step size
+  
+) %>% 
+  
+  set_engine("xgboost") %>% 
+  
+  set_mode("classification")
+
+
+
+xgb_spec
+
+
+
+xgb_grid <- grid_latin_hypercube(
+  
+  tree_depth(),
+  
+  min_n(c(1,10)),
+  
+  loss_reduction(c(-1,0.1)),
+  
+  sample_size = sample_prop(range=c(0.5,1)),
+  
+  learn_rate(c(-1,0)),
+  
+  size = 100
+  
+)
+
+
+xgb_grid
+
+
+
+xgb_workflow <- workflow() %>%
+    add_model(xgb_spec) %>% 
+    add_formula(credit ~ .)
+
+
+xgb_result<- xgb_workflow %>%
+  
+  tune_grid(validation_split,
+            grid=xgb_grid,
+            metrics = metric_set(mn_log_loss),
+            control = ctrl_res) 
+
+xgb_result %>% collect_metrics()
+xgb_result %>% show_best()
+
+xgb_tune_best <- xgb_result %>% select_best(metric="mn_log_loss")
+```
+
+
+1차 결과 mtry 3 min_n 13 tree_depth 13 learn late 0.126 loss reduction 1.19, sample size 0.983  mean log loss 0.726
+<br/>
+2차 결과 mtry 3 min_n 7 tree_depth 10 learn late 0.183 loss reduction 0.921, sample size 0.910  mean log loss 0.733
+<br/>
+3차 결과 mtry 3 min_n 4 tree_depth 11 learn late 0.110 loss reduction 1.11, sample size 0.891  mean log loss 0.722
+<br/>
+
+```{r eval=FALSE}
+xgb_model <- boost_tree(
+   trees = 1000, 
+   tree_depth = xgb_tune_best$tree_depth, 
+   min_n = xgb_tune_best$min_n, 
+   loss_reduction = xgb_tune_best$loss_reduction,## first three: model complexity
+   sample_size = xgb_tune_best$sample_size, mtry = xgb_tune_best$mtry,         ## randomness
+   learn_rate = xgb_tune_best$learn_rate,                         ## step size
+  ) %>% 
+  set_engine("xgboost") %>% 
+  set_mode("classification")
+
+xgb_fit <- 
+    xgb_model %>% fit(credit ~ ., data = train2)
+
+
+xgb_fit
+```
+
+#light GBM 를 실행해보자
+```{r eval=FALSE}
+gbm_spec <- boost_tree(
+  
+  trees = 1000, 
+  
+  tree_depth = tune(), min_n = tune(), 
+  
+  loss_reduction = tune(),                     ## first three: model complexity
+  
+  sample_size = tune(), mtry = tune(),         ## randomness
+  
+  learn_rate = tune(),                         ## step size
+  
+) %>% 
+  
+  set_engine("lightgbm") %>% 
+  
+  set_mode("classification")
+
+gbm_spec
+gbm_grid <- grid_latin_hypercube(
+  
+  mtry(c(3,9)),
+  
+  tree_depth(c(11,15)),
+  
+  min_n(c(3,11)),
+  
+  loss_reduction(c(-1,0.1)),
+  
+  sample_size = sample_prop(range=c(0.5,1)),
+  
+  learn_rate(c(-1,0)),
+  
+  size = 100 
+)
+
+
+gbm_grid
+
+
+gbm_workflow <- workflow() %>%
+  add_model(gbm_spec) %>% 
+  add_formula(credit ~ .)
+
+
+tic()
+
+gbm_result<- gbm_workflow %>%
+    tune_grid(validation_split,
+            grid=gbm_grid,
+            metrics = metric_set(mn_log_loss),
+            control = ctrl_res) 
+
+toc()
+
+
+gbm_result %>% collect_metrics()
+gbm_result %>% show_best()
+
+gbm_tune_best <- gbm_result %>% select_best(metric="mn_log_loss")
+```
+gbm 1차 결과 mtry 4 min_n 13 tree_depth 15 learn late 0.11 loss reduction 0.141, sample size 0.845  mean log loss 0.725
+<br/>
+gbm 2차 결과 mtry 8 min_n 3 tree_depth 14 learn late 0.104 loss reduction 0.327, sample size 0.582  mean log loss 0.718
+<br/>
+gbm 3차 결과 mtry 7 min_n 11 tree_depth 14 learn late 0.121 loss reduction 0.126, sample size 0.882  mean log loss 0.717
+<br/>
+gbm 4차 결과 mtry 8 min_n 6 tree_depth 15 learn late 0.124 loss reduction 0.242, sample size 0.675  mean log loss 0.715
+<br/>
+gbm 5차 결과 mtry 9 min_n 11 tree_depth 15 learn late 0.169 loss reduction 0.148, sample size 0.664  mean log loss 0.716
+
+```{r eval=FALSE}
+
+**파라미터 튜닝을 좀 더 하면 유의미한 결과가 나올거 같다.**
+
+
+gbm_model <- boost_tree(
+  trees = 1000, 
+  tree_depth = gbm_tune_best$tree_depth, 
+  min_n = gbm_tune_best$min_n, 
+  loss_reduction = gbm_tune_best$loss_reduction,## first three: model complexity
+  sample_size = gbm_tune_best$sample_size, mtry = gbm_tune_best$mtry,         ## randomness
+  learn_rate = gbm_tune_best$learn_rate,                         ## step size
+) %>% 
+  set_engine("lightgbm") %>% 
+  set_mode("classification")
+
+gbm_fit <- 
+  gbm_model %>% fit(credit ~ ., data = train2)
+
+gbm_fit
+```
+
+
+# Stacking 을 해보자. 랜덤포레스트에서 2개 + 로지스틱 모형에서 1개 + xgboost 에서 2개 + lightGBM 에서 2개 
+
+
+## 그리드 재설정 
+
+```{r eval=FALSE}
+
+
+param_grid <- tibble(mtry=c(3,3),min_n=c(5,6))
+lambda_grid <- tibble(mixture=c(0.1),penalty=c(0.0087))
+xgb_grid <- tibble(mtry=c(3,3),min_n=c(13,4),tree_depth=c(13,11),learn_rate=c(0.126,0.11),loss_reduction=c(1.19,1.11),sample_size=c(0.983,0.891))
+gbm_grid <- tibble(mtry=c(8,9),min_n=c(6,11),tree_depth=c(15,15),learn_rate=c(0.124,0.169),loss_reduction=c(0.242,0.148),sample_size=c(0.675,0.664))
+
+tic()
+tune_result <- workflow %>% 
+  tune_grid(validation_split,
+            grid = param_grid,
+            metrics = metric_set(mn_log_loss),
+            control = ctrl_res)
+
+logit_result<- logit_workflow %>%
+  tune_grid(validation_split,
+            grid=lambda_grid,
+            metrics = metric_set(mn_log_loss),
+            control = ctrl_res) 
+
+xgb_result<- xgb_workflow %>%
+  tune_grid(validation_split,
+            grid=xgb_grid,
+            metrics = metric_set(mn_log_loss),
+            control = ctrl_res) 
+
+gbm_result<- gbm_workflow %>%
+  tune_grid(validation_split,
+            grid=gbm_grid,
+            metrics = metric_set(mn_log_loss),
+            control = ctrl_res) 
+toc()
+
+credit_stacking <- 
+  stacks() %>% 
+  add_candidates(tune_result) %>% 
+  add_candidates(logit_result) %>%
+  add_candidates(xgb_result)  %>%
+  add_candidates(gbm_result)
+
+credit_stacking
+as_tibble(credit_stacking)
+
+stacking_model <- credit_stacking %>% blend_predictions() %>% fit_members() 
+
+stacking_model
+
+final_result <- predict(stacking_model, test2,type = "prob")
+
+final_result
+```
+
+
+# 예측하기
+
+```{r eval=FALSE}
+result1 <- predict(rf_fit, test2, type = "prob")
+result1 %>% head()
+
+result2 <- predict(rf_fit2, test2, type = "prob")
+result2 %>% head()
+
+result3 <- predict(rf_fit3, test2, type = "prob")
+result3 %>% head()
+
+result4 <- predict(xgb_fit, test2, type = "prob")
+result4 %>% head()
+
+result5 <- predict(gbm_fit, test2, type = "prob")
+result5 %>% head()
+
+
+result<-(result1+result2+result3)/3
+result %>% head()
+
+softresult<- (result3+logit_pred)/2
+softresult %>% head()
+
+submission <- read_csv(file.path(file_path, "sample_submission.csv"))
+
+sub_col <- names(submission)
+
+submission <- bind_cols(submission$index, final_result)
+
+names(submission) <- sub_col
+
+write.csv(submission, row.names = FALSE,
+          
+          "rammon33.csv")
+  

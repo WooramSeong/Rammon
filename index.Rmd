@@ -3,13 +3,14 @@ title: "Rammon's Github"
 description: 
 
 
-  Welcome to my website. I hope you enjoy it!
+  Welcome to my website. I hope you enjoy it! 
+  <br/>
   Prediction with AmesHousing uploaded!
-  Ridge & Lasso uploaded!
+  <br/>
+  Ridge & Lasso Uploaded!
+  <br/>
+  Gradient Descent Uploaded! 
 
-  
-  
-  
 site: distill::distill_website
 ---
 

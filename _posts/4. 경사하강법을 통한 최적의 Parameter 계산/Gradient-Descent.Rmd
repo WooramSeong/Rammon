@@ -25,16 +25,12 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r library, include=FALSE}
 library(tidymodels)
-
 library(tidyverse) 
-
 library(skimr)
-
 library(knitr)
 ```
 
 ```{r load table, include=FALSE}
-
   
   file_path <-  "/cloud/project/input"
   
@@ -55,8 +51,6 @@ library(knitr)
 model<-glm(Claims ~ Gender + Territory,
 family = poisson(link=log), data = example_data)
 model$coefficients
-
-
 ```
 
 (2)
@@ -85,22 +79,16 @@ example_data$Gender[example_data$Gender=="F"] <-0
 example_data$Territory[example_data$Territory=="West"]<-1
 example_data$Territory[example_data$Territory=="East"]<-0
 example_data
-
 example_data$Gender<-as.numeric(example_data$Gender)
 example_data$Territory<-as.numeric(example_data$Territory)
-
 class(example_data$Gender)
-
 ```
 
 
 ```{r code2, include=TRUE}
 set.seed(2022)
 beta <- rnorm(3)
-
 sigma_f<-function(x){exp(x)}
-
-
 nll <- function(beta){
   y<- example_data$Claims
   pi_vec <- sigma_f(matrix(cbind(1, example_data$Gender,
@@ -134,12 +122,6 @@ while ((improve > conv_threshold) & (iter_n<= max_n)) {
   beta <- beta_new
   iter_n <- iter_n +1
 }
-
 result[iter_n-1,]
 model$coefficients
 ```
-
-
-
-
-

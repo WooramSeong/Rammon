@@ -14,7 +14,7 @@ navbar:
       href: about.html
     - text: "Rammon's Portfolio"
       href: portfolio.html
-    - text: "A1ssingnment"
+    - text: "Assingnment"
       menu:
         - text: "Data Analysis(AmesHosuing)"
           href: AmesHousing.html

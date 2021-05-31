@@ -116,7 +116,7 @@ code span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warni
 <!--/radix_placeholder_rmarkdown_metadata-->
   
   <script type="text/json" id="radix-resource-manifest">
-  {"type":"NULL"}
+  {"type":"character","attributes":{},"value":["Gradient-Descent_files/anchor-4.2.2/anchor.min.js","Gradient-Descent_files/bowser-1.9.3/bowser.min.js","Gradient-Descent_files/distill-2.2.21/template.v2.js","Gradient-Descent_files/header-attrs-2.7/header-attrs.js","Gradient-Descent_files/jquery-1.11.3/jquery.min.js","Gradient-Descent_files/popper-2.6.0/popper.min.js","Gradient-Descent_files/tippy-6.2.7/tippy-bundle.umd.min.js","Gradient-Descent_files/tippy-6.2.7/tippy-light-border.css","Gradient-Descent_files/tippy-6.2.7/tippy.css","Gradient-Descent_files/tippy-6.2.7/tippy.umd.min.js","Gradient-Descent_files/webcomponents-2.0.0/webcomponents.js"]}
   </script>
   <!--radix_placeholder_navigation_in_header-->
 <meta name="distill:offset" content="../.."/>
@@ -2081,7 +2081,7 @@ document.addEventListener('DOMContentLoaded', function() {
 <a href="../../portfolio.html">Rammon's Portfolio</a>
 <div class="nav-dropdown">
 <button class="nav-dropbtn">
-A1ssingnment
+Assingnment
  
 <span class="down-arrow">&#x25BE;</span>
 </button>
@@ -2177,10 +2177,7 @@ code
 <div class="sourceCode">
 <pre class="sourceCode r"><code class="sourceCode r"><span class='fu'><a href='https://rdrr.io/r/base/Random.html'>set.seed</a></span><span class='op'>(</span><span class='fl'>2022</span><span class='op'>)</span>
 <span class='va'>beta</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/Normal.html'>rnorm</a></span><span class='op'>(</span><span class='fl'>3</span><span class='op'>)</span>
-
 <span class='va'>sigma_f</span><span class='op'>&lt;-</span><span class='kw'>function</span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span><span class='op'>{</span><span class='fu'><a href='https://rdrr.io/r/base/Log.html'>exp</a></span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span><span class='op'>}</span>
-
-
 <span class='va'>nll</span> <span class='op'>&lt;-</span> <span class='kw'>function</span><span class='op'>(</span><span class='va'>beta</span><span class='op'>)</span><span class='op'>{</span>
   <span class='va'>y</span><span class='op'>&lt;-</span> <span class='va'>example_data</span><span class='op'>$</span><span class='va'>Claims</span>
   <span class='va'>pi_vec</span> <span class='op'>&lt;-</span> <span class='fu'>sigma_f</span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/matrix.html'>matrix</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/cbind.html'>cbind</a></span><span class='op'>(</span><span class='fl'>1</span>, <span class='va'>example_data</span><span class='op'>$</span><span class='va'>Gender</span>,
@@ -2229,7 +2226,6 @@ code
   <span class='va'>beta</span> <span class='op'>&lt;-</span> <span class='va'>beta_new</span>
   <span class='va'>iter_n</span> <span class='op'>&lt;-</span> <span class='va'>iter_n</span> <span class='op'>+</span><span class='fl'>1</span>
 <span class='op'>}</span>
-
 <span class='va'>result</span><span class='op'>[</span><span class='va'>iter_n</span><span class='op'>-</span><span class='fl'>1</span>,<span class='op'>]</span>
 </code></pre>
 </div>
