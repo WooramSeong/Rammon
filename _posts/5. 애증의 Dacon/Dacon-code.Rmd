@@ -438,7 +438,9 @@ ctrl_grid <- control_stack_grid()
 ```
 
 
-##랜덤 포레스트를 사용할 것이고, mtry와 min_n을 어떻게 정할지를 평가셋을 통해서 결정할 것이므로, `tune()`를 사용해서 tidymodels에게 알려주도록 한다.
+# 랜덤 포레스트를 실행해보자, 
+
+mtry와 min_n을 어떻게 정할지를 평가셋을 통해서 결정할 것이므로, `tune()`를 사용해서 tidymodels에게 알려주도록 한다.
 
 ```{r eval=FALSE} 
 
@@ -636,7 +638,7 @@ Ranger result
 
  OOB prediction error (Brier s.):  0.2288811 
 
-#Stacking 을 위해 logitstic model을 돌려보자. 
+# Logitstic model을 돌려보자. 
 ```{r eval=FALSE} 
 logit_spec <- multinom_reg(penalty = tune(),
                           mixture = tune()) %>%
@@ -690,7 +692,7 @@ logit_pred
 ```
 
 
-#XGboost 를 실행해보자
+# XGboost 를 실행해보자
 
 ```{r eval=FALSE}
 
@@ -784,7 +786,7 @@ xgb_fit <-
 xgb_fit
 ```
 
-#light GBM 를 실행해보자
+# light GBM 를 실행해보자
 ```{r eval=FALSE}
 gbm_spec <- boost_tree(
   
@@ -880,7 +882,9 @@ gbm_fit
 ```
 
 
-# Stacking 을 해보자. 랜덤포레스트에서 2개 + 로지스틱 모형에서 1개 + xgboost 에서 2개 + lightGBM 에서 2개 
+# Stacking 을 실행해보자. 
+
+##랜덤포레스트에서 2개 + 로지스틱 모형에서 1개 + xgboost 에서 2개 + lightGBM 에서 2개 
 
 
 ## 그리드 재설정 
