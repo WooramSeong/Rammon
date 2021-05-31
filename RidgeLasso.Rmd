@@ -1,0 +1,262 @@
+---
+title: "Coefficient Ridge & Lasso"
+
+output:
+  html_document:
+    number_sections: true
+    fig_caption: true
+    toc: true
+    fig_width: 5
+    fig_height: 4
+    theme: cosmo
+    highlight: tango
+    code_folding: show
+---
+
+이삭 쌤의 응용통계학 수업 관련 과제 페이지 입니다
+
+
+```{r setup, include=TRUE}
+knitr::opts_chunk$set(echo = TRUE,
+                      fig.align = "center")
+
+```
+
+# 준비작업 {.tabset .tabset-fade}
+
+
+## 필요 라이브러리 모음 
+```{r library, include=TRUE}
+
+library(tidymodels)
+library(tidyverse)
+library(magrittr)
+library(skimr)
+library(knitr)
+library(car)
+library(glmnet)
+library(doParallel)
+theme_set(theme_bw())
+```
+
+
+## 데이터 정리 작업 (NA처리)
+```{r file, include=TRUE}
+
+train <- read_csv("Lecture3/train.csv")
+test <- read_csv("Lecture3/test.csv")
+
+all_data <- bind_rows(train, test) %>% 
+  janitor::clean_names()
+names(all_data)[1:81]
+
+housing_recipe <- all_data %>% 
+  recipe(sale_price ~ .) %>%
+  step_rm(id) %>% 
+  step_log(sale_price) %>% 
+  step_modeimpute(all_nominal()) %>% 
+  step_dummy(all_nominal()) %>% 
+  step_meanimpute(all_predictors()) %>%
+  step_normalize(all_predictors()) %>% 
+  ##step_nzv(all_predictors()) %>% 
+  prep(training = all_data)
+
+print(housing_recipe)
+all_data2 <- juice(housing_recipe)
+train_index <- seq_len(nrow(train))
+
+train2 <- all_data2[train_index,]
+test2 <- all_data2[-train_index,]
+train2 %>% 
+  head() %>% 
+  kable()
+```
+
+## 검증 set 및 Lambda Grid 설정하기 
+```{r validation, include=TRUE}
+
+validation_set<- validation_split(train2, prop = 0.3)
+
+ 
+
+validation_set$splits[[1]]$in_id
+ 
+439/nrow(train)
+
+
+tune_spec <- linear_reg(penalty = tune(), mixture = 1) %>%
+  set_engine("glmnet")
+
+lambda_grid <- grid_regular(penalty(), levels = 100)
+
+```
+0.3는 분석을 위해 남아 있을 표본의 비율
+439개로 확인됨
+0.3 확인
+
+
+# Coefficient 찾기 {.tabset .tabset-fade}
+
+## Best Lambda (Lasso)일 때
+```{r content1, include=TRUE, message=FALSE,echo=FALSE}
+
+workflow <- workflow() %>%
+  add_model(tune_spec) %>% 
+  add_formula(sale_price ~ .)
+
+doParallel::registerDoParallel()
+
+tune_result <- workflow %>% 
+  tune_grid(validation_set,
+            grid = lambda_grid,
+            metrics = metric_set(rmse))
+
+tune_result %>% 
+  collect_metrics()
+
+tune_result %>% show_best()
+
+tune_best <- tune_result %>% select_best(metric = "rmse")
+tune_best$penalty
+
+lasso_model <- 
+  linear_reg(penalty = tune_best$penalty, # tuned penalty
+             mixture = 1) %>% # lasso: 1, ridge: 0
+  set_engine("glmnet")
+
+lasso_fit <- 
+  lasso_model %>% 
+  fit(sale_price ~ ., data = train2)
+
+result_lasso <- lasso_fit %>% 
+  tidy() %>% filter (estimate != 0)%>% select(term,estimate)
+
+result_lasso
+```
+
+다행히도(?) 3가지 방법 모두 같은 독립 변수들을 선택하였다.
+
+변수들은 다음과 같다. 
+
+## Best Lambda (Ridge)일 때
+```{r content2, include=TRUE, echo=TRUE}
+
+tune_spec2 <- linear_reg(penalty = tune(), mixture = 0) %>%
+  set_engine("glmnet")
+
+workflow2 <- workflow() %>%
+  add_model(tune_spec2) %>% 
+  add_formula(sale_price ~ .)
+
+doParallel::registerDoParallel()
+
+tune_result2 <- workflow2 %>% 
+  tune_grid(validation_set,
+            grid = lambda_grid,
+            metrics = metric_set(rmse))
+
+##rmse root mean square error
+
+tune_result2 %>% 
+  collect_metrics()
+
+tune_result2 %>% show_best()
+
+tune_best2 <- tune_result2 %>% select_best(metric = "rmse")
+tune_best2$penalty
+
+Ridge_model <- 
+  linear_reg(penalty = tune_best2$penalty, # tuned penalty
+             mixture = 0) %>% # lasso: 1, ridge: 0
+  set_engine("glmnet")
+
+Ridge_fit <- 
+  Ridge_model %>% 
+  fit(sale_price ~ ., data = train2)
+
+result_Ridge <- Ridge_fit %>% 
+  tidy() %>% filter (estimate != 0)%>% select(term,estimate)
+
+result_Ridge
+```
+
+
+```{r content3, include=TRUE, echo=FALSE}
+
+
+coefficient_lambda<- function(x,y) {
+  Ridge_model <- 
+    linear_reg(penalty = x, # tuned penalty
+               mixture = y) %>% # lasso: 1, ridge: 0
+    set_engine("glmnet")
+  
+  Ridge_fit <- 
+    Ridge_model %>% 
+    fit(sale_price ~ ., data = train2)
+  
+  result_Ridge <- Ridge_fit %>% 
+    tidy() %>% select(estimate)
+  
+  result_Ridge
+  
+}
+```
+
+
+```{r content11, include=TRUE, echo=TRUE}
+
+
+
+Ridge<-train2[seq_len(nrow(lambda_grid)),]%>%select(-sale_price)
+Lasso<-train2[seq_len(nrow(lambda_grid)),]%>%select(-sale_price)
+
+Intercept<-c(0)
+Ridge<-cbind(Intercept,Ridge)
+Lasso<-cbind(Intercept,Lasso)
+
+Ridge<-cbind(lambda_grid,Ridge)
+Lasso<-cbind(lambda_grid,Lasso)
+
+Ridge_t<-as.data.frame(t(Ridge))
+Lasso_t<-as.data.frame(t(Lasso))
+
+for (i in 1:100) {
+  Ridge_t[-1,i]<-coefficient_lambda(lambda_grid$penalty[i],0)
+  Lasso_t[-1,i]<-coefficient_lambda(lambda_grid$penalty[i],1)
+}
+
+Ridge_coeffi<-as.data.frame(t(Ridge_t))
+Lasso_coeffi<-as.data.frame(t(Lasso_t))
+
+skim(Ridge_coeffi)
+skim(Lasso_coeffi)
+
+ggplot(data=Ridge_coeffi) + 
+  geom_line(aes(x=penalty,y=ms_sub_class), color="1") + 
+  geom_line(aes(x=penalty,y=lot_frontage), color="2") +
+  geom_line(aes(x=penalty,y=lot_area), color="3") +
+  geom_line(aes(x=penalty,y=overall_qual,), color="4") + 
+  geom_line(aes(x=penalty,y=overall_cond), color="5") +
+  geom_line(aes(x=penalty,y=year_built), color="6") +
+  geom_line(aes(x=penalty,y=year_remod_add), color="7")+
+  geom_line(aes(x=penalty,y=mas_vnr_area), color="8")+
+  geom_line(aes(x=penalty,y=bsmt_fin_sf1), color="9")+
+  geom_line(aes(x=penalty,y=bsmt_fin_sf2), color="10")+
+  geom_line(aes(x=penalty,y=bsmt_unf_sf), color="11")
+
+ggplot(data=Lasso_coeffi) + 
+  geom_line(aes(x=penalty,y=ms_sub_class), color="1") + 
+  geom_line(aes(x=penalty,y=lot_frontage), color="2") +
+  geom_line(aes(x=penalty,y=lot_area), color="3") +
+  geom_line(aes(x=penalty,y=overall_qual,), color="4") + 
+  geom_line(aes(x=penalty,y=overall_cond), color="5") +
+  geom_line(aes(x=penalty,y=year_built), color="6") +
+  geom_line(aes(x=penalty,y=year_remod_add), color="7")+
+  geom_line(aes(x=penalty,y=mas_vnr_area), color="8")+
+  geom_line(aes(x=penalty,y=bsmt_fin_sf1), color="9")+
+  geom_line(aes(x=penalty,y=bsmt_fin_sf2), color="10")+
+  geom_line(aes(x=penalty,y=bsmt_unf_sf), color="11")
+```
+
+
+

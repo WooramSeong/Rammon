@@ -1,0 +1,109 @@
+---
+title: "saleprice prediction"
+description: 응용통계학 hw3
+author:
+  - name: hanbyeol
+    url: {}
+date: 03-18-2021
+output:
+  distill::distill_article:
+    self_contained: false
+    html_document:
+    number_sections: true
+    fig_caption: true
+    toc: true
+    fig_width: 5
+    fig_height: 4
+    theme: cosmo
+    highlight: tango
+    code_folding: code
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# library
+
+```{r}
+library(dplyr)
+```
+## NPV Function with Tax (Monte carlo Simulation)
+*Initial Investment = I*\
+*CASHFLOW before tax = CF*\
+*Growth rate = G*\
+*Tax rate = T*
+  *Cost of Captial = C*\
+*Period = N*\
+
+```{r setup2, include=TRUE}
+
+NPVRAM <-function(I,CF,G,T,C,N) {
+  PVCF = 0 
+  ACF= CF*(1-T)  ##After tax cash flow
+  for(i in 1:N){
+    PVCF[i]<-ACF*(1+G)^(i-1) / (1+C)^i 
+  }
+  
+  sum(PVCF)-I}
+
+### Monte Function ###
+
+Monte <- function(PROB,RV) {if(PROB<=0.25){
+  return(RV[1])}
+  else if(PROB<=0.75) {
+    return(RV[2])
+  }
+  else  { 
+    return(RV[3])
+  }}      
+
+
+
+NPVRAM(5000000,1000000,0.03,0.25,0.06,10)
+
+A<-c(5500000,5000000,4500000)
+B<-c(900000,1000000,1100000)
+C<-c(0.02,0.03,0.04)
+D<-c(0.35,0.25,0.15)
+E<-c(0.07,0.06,0.05)
+F<-c(8,10,12)
+
+
+Result<-0
+
+
+### NPVMONTE function ###
+
+
+NPVMONTE <- function(x) {
+  
+  NPV1<-c(1:x)  
+  for(i in 1:x){
+    
+    I1<-Monte(runif(1),A)
+    CF1<-Monte(runif(1),B)
+    G1<-Monte(runif(1),C)
+    T1<-Monte(runif(1),D)
+    C1<-Monte(runif(1),E)
+    N1<-Monte(runif(1),F)
+    NPV1[i] <- NPVRAM(I1,CF1,G1,T1,C1,N1)                   
+  }
+  return(NPV1) 
+}
+
+Result1<-NPVMONTE(10000)
+mean(Result1)  ## NPV ???հ?
+var(Result1)   ## NPV var ??
+Result1<-as.data.frame(Result1)
+colnames(Result1) <- "NPV"
+Result1<-arrange(Result1,NPV)
+Positive<- filter(Result1,NPV>0)  
+nrow(Positive)/nrow(Result1)     ## NPV ?? ?????? Ȯ?? ##
+AM<- filter(Result1,NPV>1000000) ## Above  1Million
+BM<- filter(Result1,NPV<1000000) ## Below  1Million
+nrow(AM)/nrow(Result1)   ## NPV 1,000,000 ?ʰ??? Ȯ??
+nrow(BM)/nrow(Result1)   ## NPV 1,000,000 ?̸??? Ȯ??
+Result1[100,1]   ## 1  percentile ##
+Result1[1000,1]  ## 10 percentile ##
+Result1[9000,1]  ## 90 percentile ##
+```

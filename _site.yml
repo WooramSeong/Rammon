@@ -20,8 +20,8 @@ navbar:
           href: AmesHousing.html
         - text: "Prediction(AmesHousing)"
           href: AmesHousing2.html
-        - text: "Time series"
-          href: TS.html
+        - text: "Ridge&Lasso"
+          href: Ridge-Lasso.html
     - icon: fab fa-github
       href: https://github.com/WooramSeong
     - icon: fab fa-instagram

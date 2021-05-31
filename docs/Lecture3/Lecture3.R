@@ -222,7 +222,7 @@ for (i in 1:nrow(sample)) {
 
 SqrtTESTMSE <- data.frame(lm=c(0) , glm=c(0), lmwithoutintercept=c(0) , lm2=c(0) , glm2 =c(0) , mix =c(0))
 
-for (i in 1:6) {
+for (i in 1:7) {
   Error <- ((sample[,2]-sample[,i+2])^2)
   Error<-na.exclude(Error)
   SqrtTESTMSE[i]<-sqrt(sum(Error)/nrow(sample))
@@ -244,3 +244,9 @@ view(Newsample)
 write.xlsx(Newsample, file = "Prediction.xlsx",
            sheetName = "Prediction", append = FALSE)
 
+
+
+EXP21 <- lm(SalePrice ~ -1 + I(OverallQual^2) + GrLivArea + Neighborhood + `1stFlrSF` + TotalBsmtSF ,data = train)
+sample[,9] <- predict(EXP21, newdata = test)
+
+names(train)
