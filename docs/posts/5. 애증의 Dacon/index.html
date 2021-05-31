@@ -2201,12 +2201,10 @@ code
 </summary>
 <div class="sourceCode">
 <pre class="sourceCode r"><code class="sourceCode r">  <span class='va'>file_path</span> <span class='op'>&lt;-</span> <span class='st'>"C:/Users/GIGABYTE/Desktop/응용통계학/Dacon"</span>
-
   
   <span class='va'>files</span> <span class='op'>&lt;-</span><span class='fu'><a href='https://rdrr.io/r/base/list.files.html'>list.files</a></span><span class='op'>(</span><span class='va'>file_path</span><span class='op'>)</span>
   
   <span class='va'>files</span>
-
   <span class='co'>#각 변수의 이름을 `janitor` 패키지로 말끔하게 바꿔준다.</span>
   
   
@@ -2253,82 +2251,49 @@ code
 </summary>
 <div class="sourceCode">
 <pre class="sourceCode r"><code class="sourceCode r"><span class='co'># 시각화</span>
-
   <span class='co'>#베이스 라인을 잡은 문서이니 간단하게 시각화 하나만 하고 넘어가자. (코드를 응용해서 다른 변수에 대한 상관 관계를 볼 수 있을 것이다.)</span>
   
-
 <span class='va'>pre_train</span><span class='op'>&lt;-</span><span class='va'>train</span><span class='op'>[</span>,<span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='op'>-</span><span class='fl'>1</span>,<span class='op'>-</span><span class='fl'>17</span><span class='op'>)</span><span class='op'>]</span>
-
 <span class='va'>pre_train</span> <span class='op'>%&lt;&gt;%</span> <span class='fu'>mutate</span><span class='op'>(</span>income_Per_Familymember <span class='op'>=</span> <span class='va'>income_total</span><span class='op'>/</span><span class='va'>family_size</span><span class='op'>)</span>
-
 <span class='co'>#변수 중요도가 높은 Begin_month, income_total, yrs_birth, income_PM</span>
-
-
 <span class='co'>#Preliminary_fit2 &lt;- ranger(credit ~ ., data = pre_train , importance = "impurity_corrected")</span>
-
 <span class='co'>#pvalues&lt;-importance_pvalues(Preliminary_fit2, method = "janitza") </span>
-
 <span class='co'>#pvalues</span>
-
-
-
 <span class='co'>#p-value가 0에 가까운 Begin_month, days_birth, days_employed 을 발견</span>
-
-
 <span class='co'>#train %&gt;%</span>
   
 <span class='co'>#  ggplot(aes(x = factor(credit), y = income_total)) +</span>
   
 <span class='co'>#  geom_boxplot()</span>
-
 <span class='co'>## Credit이 바뀌어도 income_total의 유의미한 결과가 보이지 않음</span>
-
-
 <span class='co'>#train %&gt;%</span>
   
 <span class='co'>#  ggplot(aes(x = factor(credit), y = days_birth)) +</span>
   
 <span class='co'>#  geom_boxplot()</span>
-
 <span class='co'>#train %&gt;%</span>
   
 <span class='co'>#  ggplot(aes(x = factor(credit), y = begin_month)) +</span>
   
 <span class='co'>#  geom_boxplot()</span>
-
-
 <span class='va'>train</span> <span class='op'>%&gt;%</span>
   
   <span class='fu'>ggplot</span><span class='op'>(</span><span class='fu'>aes</span><span class='op'>(</span>x <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/factor.html'>factor</a></span><span class='op'>(</span><span class='va'>credit</span><span class='op'>)</span>, y <span class='op'>=</span> <span class='va'>days_employed</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
   
   <span class='fu'>geom_boxplot</span><span class='op'>(</span><span class='op'>)</span>
-
-
 <span class='co'>## 데이터 365,243 처리를 어떻게 해야 하는가 365,243,을 제외한 최댓값 or 최솟값 or 중앙값</span>
-
-
 <span class='va'>train</span> <span class='op'>%&gt;%</span> <span class='fu'><a href='https://rdrr.io/r/stats/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>days_employed</span><span class='op'>&gt;</span><span class='fl'>300000</span><span class='op'>)</span>
-
 <span class='va'>train</span> <span class='op'>%&gt;%</span> <span class='fu'><a href='https://rdrr.io/r/stats/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>days_employed</span><span class='op'>&gt;</span><span class='fl'>300000</span><span class='op'>)</span><span class='op'>%&gt;%</span><span class='fu'>select</span><span class='op'>(</span><span class='va'>income_type</span>,<span class='va'>days_employed</span><span class='op'>)</span>
-
 <span class='fu'><a href='https://rdrr.io/r/base/Extremes.html'>min</a></span><span class='op'>(</span><span class='va'>Days_employed</span><span class='op'>)</span>
-
 <span class='fu'><a href='https://rdrr.io/r/base/Extremes.html'>max</a></span><span class='op'>(</span><span class='va'>Days_employed</span><span class='op'>)</span>
-
 <span class='fu'><a href='https://rdrr.io/r/stats/median.html'>median</a></span><span class='op'>(</span><span class='va'>Days_employed</span><span class='op'>)</span>
-
 <span class='va'>train</span><span class='op'>$</span><span class='va'>days_employed</span><span class='op'>[</span><span class='va'>train</span><span class='op'>$</span><span class='va'>days_employed</span> <span class='op'>==</span> <span class='fl'>365243</span><span class='op'>]</span> <span class='op'>&lt;-</span> <span class='op'>-</span><span class='fl'>1977</span>
-
 <span class='va'>test</span><span class='op'>$</span><span class='va'>days_employed</span><span class='op'>[</span><span class='va'>test</span><span class='op'>$</span><span class='va'>days_employed</span> <span class='op'>==</span> <span class='fl'>365243</span><span class='op'>]</span> <span class='op'>&lt;-</span> <span class='op'>-</span><span class='fl'>1977</span>
-
 <span class='co'>## Credit이 바뀌어도 income_total의 유의미한 결과가 보이지 않음</span>
-
 <span class='va'>post_train</span><span class='op'>&lt;-</span><span class='va'>train</span>
 <span class='va'>post_train</span><span class='op'>$</span><span class='va'>credit</span><span class='op'>&lt;-</span><span class='fu'><a href='https://rdrr.io/r/base/numeric.html'>as.numeric</a></span><span class='op'>(</span><span class='va'>post_train</span><span class='op'>$</span><span class='va'>credit</span><span class='op'>)</span>
 <span class='fu'>corrplot</span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/stats/cor.html'>cor</a></span><span class='op'>(</span><span class='va'>post_train</span><span class='op'>[</span>,<span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>20</span>,<span class='fl'>19</span>,<span class='fl'>12</span>,<span class='fl'>11</span>,<span class='fl'>6</span><span class='op'>)</span><span class='op'>]</span><span class='op'>)</span><span class='op'>)</span>
-
 <span class='co'>#begin_Month 데이터 전처리가 핵심인거 같다.</span>
-
 <span class='va'>train</span> <span class='op'>%&gt;%</span>
   
  <span class='fu'>ggplot</span><span class='op'>(</span><span class='fu'>aes</span><span class='op'>(</span>x <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/factor.html'>factor</a></span><span class='op'>(</span><span class='va'>credit</span><span class='op'>)</span>, y <span class='op'>=</span> <span class='va'>income_total</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
@@ -2336,20 +2301,11 @@ code
   <span class='fu'>geom_boxplot</span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
   
   <span class='fu'>facet_grid</span><span class='op'>(</span><span class='va'>.</span> <span class='op'>~</span> <span class='va'>occyp_type</span><span class='op'>)</span>
-
 <span class='fu'><a href='https://rdrr.io/r/base/dim.html'>dim</a></span><span class='op'>(</span><span class='va'>train</span><span class='op'>)</span>
-
 <span class='fu'><a href='https://rdrr.io/r/base/Extremes.html'>min</a></span><span class='op'>(</span><span class='va'>train</span><span class='op'>$</span><span class='va'>income_total</span><span class='op'>)</span>
-
-
 <span class='va'>train</span> <span class='op'>%&lt;&gt;%</span> <span class='fu'><a href='https://rdrr.io/r/stats/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>income_total</span><span class='op'>&lt;</span><span class='fl'>1250000</span> <span class='op'>&amp;</span> <span class='va'>income_total</span><span class='op'>&gt;</span><span class='fl'>27000</span><span class='op'>)</span>
-
 <span class='fu'><a href='https://rdrr.io/r/base/dim.html'>dim</a></span><span class='op'>(</span><span class='va'>train</span><span class='op'>)</span>
-
-
-
 <span class='fu'><a href='https://rdrr.io/r/base/colnames.html'>colnames</a></span><span class='op'>(</span><span class='va'>train</span><span class='op'>)</span>
-
 <span class='va'>train</span> <span class='op'>%&gt;%</span>
   
  <span class='fu'>ggplot</span><span class='op'>(</span><span class='fu'>aes</span><span class='op'>(</span>x <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/factor.html'>factor</a></span><span class='op'>(</span><span class='va'>credit</span><span class='op'>)</span>, y <span class='op'>=</span> <span class='va'>begin_month</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
@@ -2357,9 +2313,6 @@ code
   <span class='fu'>geom_boxplot</span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
   
   <span class='fu'>facet_grid</span><span class='op'>(</span><span class='va'>.</span> <span class='op'>~</span> <span class='va'>occyp_type</span><span class='op'>)</span>
-
-
-
 <span class='co'>#  train %&gt;%</span>
   
 <span class='co'>#  ggplot(aes(x = factor(credit), y = begin_month)) +</span>
@@ -2367,7 +2320,6 @@ code
 <span class='co'>#  geom_boxplot() +</span>
   
 <span class='co'>#  facet_grid(. ~ income_type)</span>
-
   
   <span class='va'>train</span> <span class='op'>%&gt;%</span>
     
@@ -2376,32 +2328,20 @@ code
     <span class='fu'>geom_boxplot</span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
     
     <span class='fu'>facet_grid</span><span class='op'>(</span><span class='va'>.</span> <span class='op'>~</span> <span class='va'>income_type</span><span class='op'>)</span>
-
-
 <span class='va'>train</span> <span class='op'>%&gt;%</span>
-
  <span class='fu'>ggplot</span><span class='op'>(</span><span class='fu'>aes</span><span class='op'>(</span>x <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/factor.html'>factor</a></span><span class='op'>(</span><span class='va'>credit</span><span class='op'>)</span>, y <span class='op'>=</span> <span class='va'>family_size</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
-
   <span class='fu'>geom_boxplot</span><span class='op'>(</span><span class='op'>)</span> 
-
 <span class='va'>train</span> <span class='op'>%&gt;%</span> <span class='fu'>select</span><span class='op'>(</span><span class='va'>income_type</span>,<span class='va'>begin_month</span><span class='op'>)</span> <span class='op'>%&gt;%</span> <span class='fu'><a href='https://rdrr.io/r/stats/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>income_type</span><span class='op'>==</span><span class='st'>"Student"</span><span class='op'>)</span>
 <span class='va'>train</span> <span class='op'>%&gt;%</span> <span class='fu'>select</span><span class='op'>(</span><span class='va'>credit</span>,<span class='va'>occyp_type</span>,<span class='va'>begin_month</span><span class='op'>)</span> <span class='op'>%&gt;%</span> <span class='fu'><a href='https://rdrr.io/r/stats/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>occyp_type</span><span class='op'>==</span><span class='st'>'HR staff'</span> <span class='op'>&amp;</span> <span class='va'>credit</span> <span class='op'>==</span> <span class='st'>"1.0"</span><span class='op'>)</span> <span class='op'>%&gt;%</span> <span class='fu'>arrange</span><span class='op'>(</span><span class='fu'>desc</span><span class='op'>(</span><span class='va'>begin_month</span><span class='op'>)</span><span class='op'>)</span>
 <span class='va'>train</span> <span class='op'>%&gt;%</span> <span class='fu'>select</span><span class='op'>(</span><span class='va'>credit</span>,<span class='va'>occyp_type</span>,<span class='va'>begin_month</span><span class='op'>)</span> <span class='op'>%&gt;%</span> <span class='fu'><a href='https://rdrr.io/r/stats/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>occyp_type</span><span class='op'>==</span><span class='st'>'Realty agents'</span> <span class='op'>&amp;</span> <span class='va'>credit</span> <span class='op'>==</span> <span class='st'>"1.0"</span><span class='op'>)</span> <span class='op'>%&gt;%</span> <span class='fu'>arrange</span><span class='op'>(</span><span class='va'>begin_month</span><span class='op'>)</span>
 <span class='va'>train</span> <span class='op'>%&gt;%</span> <span class='fu'>select</span><span class='op'>(</span><span class='va'>credit</span>,<span class='va'>occyp_type</span>,<span class='va'>begin_month</span><span class='op'>)</span> <span class='op'>%&gt;%</span> <span class='fu'><a href='https://rdrr.io/r/stats/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>occyp_type</span><span class='op'>==</span><span class='st'>'Waiters/barmen staff'</span> <span class='op'>&amp;</span> <span class='va'>credit</span> <span class='op'>==</span> <span class='st'>"1.0"</span><span class='op'>)</span> <span class='op'>%&gt;%</span> <span class='fu'>arrange</span><span class='op'>(</span><span class='va'>begin_month</span><span class='op'>)</span>
-
-
-
 <span class='fu'><a href='https://rdrr.io/r/base/sets.html'>intersect</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/which.html'>which</a></span><span class='op'>(</span><span class='va'>train</span><span class='op'>$</span><span class='va'>occyp_type</span> <span class='op'>==</span> <span class='st'>'HR staff'</span><span class='op'>)</span>,<span class='fu'><a href='https://rdrr.io/r/base/which.html'>which</a></span><span class='op'>(</span><span class='va'>train</span><span class='op'>$</span><span class='va'>begin_month</span> <span class='op'>==</span> <span class='op'>-</span><span class='fl'>8</span><span class='op'>)</span><span class='op'>)</span>
 <span class='fu'><a href='https://rdrr.io/r/base/sets.html'>intersect</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/which.html'>which</a></span><span class='op'>(</span><span class='va'>train</span><span class='op'>$</span><span class='va'>occyp_type</span> <span class='op'>==</span> <span class='st'>'Realty agents'</span><span class='op'>&amp;</span> <span class='va'>train</span><span class='op'>$</span><span class='va'>credit</span><span class='op'>==</span> <span class='st'>"1.0"</span><span class='op'>)</span>,<span class='fu'><a href='https://rdrr.io/r/base/which.html'>which</a></span><span class='op'>(</span><span class='va'>train</span><span class='op'>$</span><span class='va'>begin_month</span> <span class='op'>==</span> <span class='op'>-</span><span class='fl'>53</span><span class='op'>)</span><span class='op'>)</span>
 <span class='fu'><a href='https://rdrr.io/r/base/sets.html'>intersect</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/which.html'>which</a></span><span class='op'>(</span><span class='va'>train</span><span class='op'>$</span><span class='va'>occyp_type</span> <span class='op'>==</span> <span class='st'>'Realty agents'</span> <span class='op'>&amp;</span> <span class='va'>train</span><span class='op'>$</span><span class='va'>credit</span><span class='op'>==</span> <span class='st'>"1.0"</span><span class='op'>)</span>,<span class='fu'><a href='https://rdrr.io/r/base/which.html'>which</a></span><span class='op'>(</span><span class='va'>train</span><span class='op'>$</span><span class='va'>begin_month</span> <span class='op'>==</span> <span class='op'>-</span><span class='fl'>43</span><span class='op'>)</span><span class='op'>)</span>
 <span class='fu'><a href='https://rdrr.io/r/base/sets.html'>intersect</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/which.html'>which</a></span><span class='op'>(</span><span class='va'>train</span><span class='op'>$</span><span class='va'>occyp_type</span> <span class='op'>==</span> <span class='st'>'Waiters/barmen staff'</span> <span class='op'>&amp;</span> <span class='va'>train</span><span class='op'>$</span><span class='va'>credit</span><span class='op'>==</span> <span class='st'>"1.0"</span><span class='op'>)</span>,<span class='fu'><a href='https://rdrr.io/r/base/which.html'>which</a></span><span class='op'>(</span><span class='va'>train</span><span class='op'>$</span><span class='va'>begin_month</span> <span class='op'>==</span> <span class='op'>-</span><span class='fl'>56</span><span class='op'>)</span><span class='op'>)</span>
 <span class='fu'><a href='https://rdrr.io/r/base/sets.html'>intersect</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/which.html'>which</a></span><span class='op'>(</span><span class='va'>train</span><span class='op'>$</span><span class='va'>income_type</span> <span class='op'>==</span> <span class='st'>'Student'</span><span class='op'>)</span>,<span class='fu'><a href='https://rdrr.io/r/base/which.html'>which</a></span><span class='op'>(</span><span class='va'>train</span><span class='op'>$</span><span class='va'>begin_month</span> <span class='op'>==</span> <span class='op'>-</span><span class='fl'>60</span><span class='op'>)</span><span class='op'>)</span>
-
 <span class='co'>#2990,11276,15649,20515,25602, 행을 제거하자</span>
-
 <span class='va'>train</span><span class='op'>&lt;-</span><span class='va'>train</span><span class='op'>[</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='op'>-</span><span class='fl'>2990</span>,<span class='op'>-</span><span class='fl'>11276</span>,<span class='op'>-</span><span class='fl'>15649</span>,<span class='op'>-</span><span class='fl'>20515</span>,<span class='op'>-</span><span class='fl'>25602</span><span class='op'>)</span>,<span class='op'>]</span>
-
-
 <span class='co'>## income_total이 상관계수가 0에 가까워서 사람수로 나누어 평균 수입으로 변수를 만들려 했으나 상관계수가 역시나 적었다. </span>
 <span class='co'>#train$credit&lt;-as.numeric(train$credit)</span>
 <span class='co'>#train %&lt;&gt;% mutate(income_PM = income_total/family_size)</span>
@@ -2409,7 +2349,6 @@ code
 <span class='co'>#sum(is.na(train$income_PM))</span>
 <span class='co'>#cor(train[,c(20,19,12,11,6,21)])</span>
 <span class='co'>#corrplot(cor(train[,c(20,19,12,11,21)]))</span>
-
 <span class='co'>#목표 변수인 credit은 낮을 수록 높은 신용의 신용카드 사용자를 의미 한다고 한다. Commercial associate 인 경우 신용이 제일 낮은 그룹의 수입의 중앙값이 제일 높다. 돈을 많이 벌수록 돈 갚은 개념이 없어지는 것인가? 재미있는 현상이다. 학생 클래스의 경우 train 데이터에 셋이 많이 없다는 것을 알 수 있다. 추후에 다른 클래스로 통합을 시키는 것이 좋을 것이다.</span>
 </code></pre>
 </div>
@@ -2424,75 +2363,53 @@ code
 <div class="sourceCode">
 <pre class="sourceCode r"><code class="sourceCode r"><span class='va'>birth_table</span><span class='op'>&lt;-</span><span class='fu'><a href='https://rdrr.io/r/base/as.data.frame.html'>as.data.frame</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/table.html'>table</a></span><span class='op'>(</span><span class='va'>train</span><span class='op'>$</span><span class='va'>days_birth</span><span class='op'>)</span><span class='op'>)</span>  
 <span class='va'>birth_table</span><span class='op'>%&gt;%</span><span class='fu'><a href='https://rdrr.io/r/stats/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>Freq</span><span class='op'>&gt;</span><span class='fl'>10</span><span class='op'>)</span><span class='op'>%&gt;%</span> <span class='fu'>arrange</span><span class='op'>(</span><span class='fu'>desc</span><span class='op'>(</span><span class='va'>Freq</span><span class='op'>)</span><span class='op'>)</span>
-
 <span class='co'>#days_birth -12676,-15519,-14667 탐색!!</span>
-
 <span class='va'>a1</span><span class='op'>&lt;-</span><span class='va'>train</span><span class='op'>%&gt;%</span><span class='fu'><a href='https://rdrr.io/r/stats/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>days_birth</span> <span class='op'>==</span> <span class='op'>-</span><span class='fl'>12676</span><span class='op'>)</span> <span class='op'>%&gt;%</span> <span class='fu'>select</span><span class='op'>(</span><span class='va'>index</span>,<span class='va'>days_employed</span>,<span class='va'>income_total</span>,<span class='va'>begin_month</span>,<span class='va'>days_birth</span>,<span class='va'>family_size</span>,<span class='va'>credit</span><span class='op'>)</span><span class='op'>%&gt;%</span><span class='fu'>arrange</span><span class='op'>(</span><span class='va'>days_employed</span>,<span class='va'>income_total</span>,<span class='va'>begin_month</span>,<span class='va'>index</span><span class='op'>)</span>
 <span class='va'>a2</span><span class='op'>&lt;-</span><span class='va'>train</span><span class='op'>%&gt;%</span><span class='fu'><a href='https://rdrr.io/r/stats/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>days_birth</span> <span class='op'>==</span> <span class='op'>-</span><span class='fl'>15519</span><span class='op'>)</span> <span class='op'>%&gt;%</span> <span class='fu'>select</span><span class='op'>(</span><span class='va'>index</span>,<span class='va'>days_employed</span>,<span class='va'>income_total</span>,<span class='va'>begin_month</span>,<span class='va'>days_birth</span>,<span class='va'>family_size</span>,<span class='va'>credit</span><span class='op'>)</span><span class='op'>%&gt;%</span><span class='fu'>arrange</span><span class='op'>(</span><span class='va'>days_employed</span>,<span class='va'>income_total</span>,<span class='va'>begin_month</span>,<span class='va'>index</span><span class='op'>)</span>
 <span class='va'>a3</span><span class='op'>&lt;-</span><span class='va'>train</span><span class='op'>%&gt;%</span><span class='fu'><a href='https://rdrr.io/r/stats/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>days_birth</span> <span class='op'>==</span> <span class='op'>-</span><span class='fl'>14667</span><span class='op'>)</span> <span class='op'>%&gt;%</span> <span class='fu'>select</span><span class='op'>(</span><span class='va'>index</span>,<span class='va'>days_employed</span>,<span class='va'>income_total</span>,<span class='va'>begin_month</span>,<span class='va'>days_birth</span>,<span class='va'>family_size</span>,<span class='va'>credit</span><span class='op'>)</span><span class='op'>%&gt;%</span><span class='fu'>arrange</span><span class='op'>(</span><span class='va'>days_employed</span>,<span class='va'>income_total</span>,<span class='va'>begin_month</span>,<span class='va'>index</span><span class='op'>)</span>
-
 <span class='va'>train</span><span class='op'>$</span><span class='va'>credit</span><span class='op'>&lt;-</span><span class='fu'><a href='https://rdrr.io/r/base/numeric.html'>as.numeric</a></span><span class='op'>(</span><span class='va'>train</span><span class='op'>$</span><span class='va'>credit</span><span class='op'>)</span>
-
 <span class='co'>#train_max&lt;-train%&gt;%group_by(days_employed,gender,income_total,credit,family_size,child_num) %&gt;% mutate(begin_month=min(begin_month))</span>
 <span class='co'>#train_min&lt;-train%&gt;%group_by(days_employed,gender,income_total,credit,family_size,child_num) %&gt;% mutate(begin_month=max(begin_month))</span>
 <span class='co'>#train_median&lt;-train%&gt;%group_by(days_employed,gender,income_total,credit,family_size,child_num) %&gt;% mutate(begin_month=median(begin_month))</span>
-
 <span class='co'>#corrplot(cor(train_max[,c(20,19,12,11,6)]))</span>
 <span class='co'>#corrplot(cor(train_min[,c(20,19,12,11,6)]))</span>
 <span class='co'>#corrplot(cor(train_median[,c(20,19,12,11,6)]))</span>
 <span class='co'>#corrplot(cor(train[,c(20,19,12,11,6)]))</span>
-
-
 <span class='co'>#데이터 정렬 행번호가 가장 빠른 애들만 남게 되기 때문에 발급일이 가장 오래된 것들을 남기기로 하자.</span>
 <span class='fu'><a href='https://rdrr.io/r/base/colnames.html'>colnames</a></span><span class='op'>(</span><span class='va'>train</span><span class='op'>)</span>
-
 <span class='co'>#train_order &lt;- train[order(train[,'begin_month'],decreasing = FALSE), ]</span>
 <span class='co'>#train_order &lt;- train_order[!duplicated(train[,c('days_birth','work_phone','phone','reality','house_type','car','days_employed','edu_type','occyp_type','child_num','income_total','income_type','family_size','begin_month','credit')]),]</span>
 <span class='co'>#train_order$credit&lt;-as.numeric(train_order$credit)</span>
 <span class='co'>#corrplot(cor(post_train[,c(20,19,12,11,6)]))</span>
 <span class='co'>#corrplot(cor(train_order[,c(20,19,12,11,6)]))</span>
-
 <span class='co'>#이번에는 최근 발급일을 기준으로 남기기로 하자.</span>
 <span class='co'>#train_order &lt;- train[order(train[,'begin_month'],decreasing = TRUE), ]</span>
 <span class='co'>#train_order &lt;- train_order[!duplicated(train[,c('days_birth','work_phone','phone','reality','house_type','car','days_employed','edu_type','occyp_type','child_num','income_total','income_type','family_size','begin_month','credit')]),]</span>
 <span class='co'>#train_order$credit&lt;-as.numeric(train_order$credit)</span>
 <span class='co'>#corrplot(cor(post_train[,c(20,19,12,11,6)]))</span>
 <span class='co'>#corrplot(cor(train_order[,c(20,19,12,11,6)]))</span>
-
 <span class='co'>## Begin_month 중복값 중 최근 발급일을 남긴 결과 상관 관계가 높아지는 결과가 나타났다.</span>
-
 <span class='co'>#train_order_inc &lt;- train[order(train[,'begin_month'],decreasing = FALSE), ]</span>
 <span class='co'>#train_order_inc &lt;- train_order_inc[!duplicated(train[,c('gender','edu_type','flag_mobil','email','days_birth','work_phone','phone','reality','house_type','car','days_employed','edu_type','occyp_type','child_num','income_total','income_type','family_size','credit')]),]</span>
 <span class='co'>#train_order_dec &lt;- train[order(train[,'begin_month'],decreasing = TRUE), ]</span>
 <span class='co'>#train_order_dec &lt;- train_order_dec[!duplicated(train[,c('gender','edu_type','flag_mobil','email','days_birth','work_phone','phone','reality','house_type','car','days_employed','edu_type','occyp_type','child_num','income_total','income_type','family_size','credit')]),]</span>
-
 <span class='co'>#train_union&lt;-union(train_order_dec,train_order_inc)</span>
 <span class='co'>#train_order$credit&lt;-as.numeric(train_order$credit)</span>
 <span class='co'>#train_order_inc$credit&lt;-as.numeric(train_order_inc$credit)</span>
 <span class='co'>#train_order_dec$credit&lt;-as.numeric(train_order_dec$credit)</span>
 <span class='co'>#train_union$credit&lt;-as.numeric(train_union$credit)</span>
-
 <span class='co'>#corrplot(cor(post_train[,c(20,19,12,11,6)]))</span>
 <span class='co'>#corrplot(cor(train_order_inc[,c(20,19,12,11,6)]))</span>
 <span class='co'>#corrplot(cor(train_order_dec[,c(20,19,12,11,6)]))</span>
 <span class='co'>#corrplot(cor(train_union[,c(20,19,12,11,6)]))</span>
 <span class='co'>#train_order_dec</span>
-
 <span class='co'>#train&lt;-train_union</span>
 <span class='co'>## 재밌는점은 상관관계가 높다고 해서 mean_log_loss가 낮아지는건 아님</span>
 <span class='co'>## 오히려 상관관계가 높은 쪽에서 log loss 값이 더 크게 나옴 ~_~</span>
-
-
-
-
 <span class='co'># 전처리 하기</span>
 <span class='co'>#`tidymodels`에서는 전처리를 할 때 `recipe` 라는 패키지를 사용한다. 이 패키지에는 전처리를 하는 방법을 음식 레피시 처럼 적어놓는다고 생각하면 쉽다.</span>
 <span class='co'>## 전처리 사항들</span>
-
-
-
 <span class='co'># 결과값인 credit 변수와 character 타입의 변수들을 factor 변수로 바꿔주자.</span>
-
 <span class='co'># 나이와 직업을 가진 기간을 년수로 바꿔준다.</span>
 </code></pre>
 </div>
@@ -2534,9 +2451,6 @@ code
   <span class='fu'>step_center</span><span class='op'>(</span><span class='fu'>all_predictors</span><span class='op'>(</span><span class='op'>)</span>, <span class='op'>-</span><span class='fu'>all_outcomes</span><span class='op'>(</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span> 
   
   <span class='fu'>prep</span><span class='op'>(</span>training <span class='op'>=</span> <span class='va'>train</span><span class='op'>)</span>
-
-
-
 <span class='fu'><a href='https://docs.ropensci.org/skimr/reference/print.html'>print</a></span><span class='op'>(</span><span class='va'>credit_recipe</span><span class='op'>)</span>
 </code></pre>
 </div>
@@ -2550,20 +2464,12 @@ code
 </summary>
 <div class="sourceCode">
 <pre class="sourceCode r"><code class="sourceCode r"><span class='co'>#`juice()` 함수를 통해서 recipe에 입력된 전처리를 짜낸 데이터를 얻어온다.</span>
-
 <span class='va'>train2</span> <span class='op'>&lt;-</span> <span class='fu'>juice</span><span class='op'>(</span><span class='va'>credit_recipe</span><span class='op'>)</span>
 <span class='va'>test2</span> <span class='op'>&lt;-</span> <span class='fu'>bake</span><span class='op'>(</span><span class='va'>credit_recipe</span>, new_data <span class='op'>=</span> <span class='va'>test</span><span class='op'>)</span>
 <span class='fu'><a href='https://rdrr.io/r/utils/head.html'>head</a></span><span class='op'>(</span><span class='va'>train2</span><span class='op'>)</span>
 <span class='fu'><a href='https://rdrr.io/r/utils/head.html'>head</a></span><span class='op'>(</span><span class='va'>test2</span><span class='op'>)</span>
-
 <span class='va'>train2</span><span class='op'>$</span><span class='va'>credit</span><span class='op'>&lt;-</span><span class='fu'><a href='https://rdrr.io/r/base/factor.html'>as.factor</a></span><span class='op'>(</span><span class='va'>train2</span><span class='op'>$</span><span class='va'>credit</span><span class='op'>)</span>
-
-
 <span class='co'>#다음과 같이 결측치 없이 잘 코딩된 데이터를 얻었다는 것을 확인 할 수 있다.</span>
-
-
-
-
 <span class='va'>train2</span> <span class='op'>%&gt;%</span>
     
   <span class='fu'>map_df</span><span class='op'>(</span><span class='op'>~</span><span class='fu'><a href='https://rdrr.io/r/base/sum.html'>sum</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/NA.html'>is.na</a></span><span class='op'>(</span><span class='va'>.</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
@@ -2589,12 +2495,8 @@ code
 </summary>
 <div class="sourceCode">
 <pre class="sourceCode r"><code class="sourceCode r"><span class='fu'><a href='https://rdrr.io/r/base/Random.html'>set.seed</a></span><span class='op'>(</span><span class='fl'>2002</span><span class='op'>)</span>
-
-
 <span class='va'>validation_split</span> <span class='op'>&lt;-</span> <span class='fu'>vfold_cv</span><span class='op'>(</span>v<span class='op'>=</span><span class='fl'>10</span>, <span class='va'>train2</span>, strata <span class='op'>=</span> <span class='va'>credit</span><span class='op'>)</span>
-
 <span class='co'>#validation_split &lt;- validation_split(train2, prop = 0.3,   strata = credit)</span>
-
 <span class='va'>validation_split</span>
 </code></pre>
 </div>
@@ -2622,11 +2524,7 @@ code
 </summary>
 <div class="sourceCode">
 <pre class="sourceCode r"><code class="sourceCode r"><span class='va'>cores</span> <span class='op'>&lt;-</span> <span class='fu'>parallel</span><span class='fu'>::</span><span class='fu'><a href='https://rdrr.io/r/parallel/detectCores.html'>detectCores</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>-</span><span class='fl'>1</span>
-
 <span class='va'>cores</span>
-
-
-
 <span class='va'>tune_spec</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://parsnip.tidymodels.org/reference/rand_forest.html'>rand_forest</a></span><span class='op'>(</span>mtry <span class='op'>=</span> <span class='fu'>tune</span><span class='op'>(</span><span class='op'>)</span>,
                          
                          min_n <span class='op'>=</span> <span class='fu'>tune</span><span class='op'>(</span><span class='op'>)</span>,
@@ -2638,48 +2536,30 @@ code
              num.threads <span class='op'>=</span> <span class='va'>cores</span><span class='op'>)</span> <span class='op'>%&gt;%</span> 
   
   <span class='fu'><a href='https://parsnip.tidymodels.org/reference/set_args.html'>set_mode</a></span><span class='op'>(</span><span class='st'>"classification"</span><span class='op'>)</span>
-
 <span class='co'># from param tune</span>
-
 <span class='co'>#param_grid &lt;- tibble(mtry = c(4,4,4,4), min_n=c(3,4,5,6)) # mtry=3으로 고정시키자</span>
 <span class='va'>param_grid</span> <span class='op'>&lt;-</span> <span class='fu'>grid_random</span><span class='op'>(</span><span class='fu'>finalize</span><span class='op'>(</span><span class='fu'>mtry</span><span class='op'>(</span><span class='op'>)</span>, x <span class='op'>=</span> <span class='va'>train2</span><span class='op'>[</span>,<span class='op'>-</span><span class='fl'>1</span><span class='op'>]</span><span class='op'>)</span>, <span class='fu'>min_n</span><span class='op'>(</span><span class='op'>)</span>,size <span class='op'>=</span> <span class='fl'>5000</span>, filter <span class='op'>=</span> <span class='fl'>2</span><span class='op'>&lt;</span><span class='va'>mtry</span> <span class='op'>&amp;</span> <span class='va'>mtry</span><span class='op'>&lt;</span><span class='fl'>5</span> <span class='op'>&amp;</span> <span class='va'>min_n</span><span class='op'>&lt;</span><span class='fl'>15</span> <span class='op'>&amp;</span> <span class='fl'>2</span><span class='op'>&lt;</span><span class='va'>min_n</span><span class='op'>)</span>
 <span class='va'>param_grid</span>
-
 <span class='co'># 워크 플로우 설정</span>
-
 <span class='va'>workflow</span> <span class='op'>&lt;-</span> <span class='fu'>workflow</span><span class='op'>(</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
   
   <span class='fu'>add_model</span><span class='op'>(</span><span class='va'>tune_spec</span><span class='op'>)</span> <span class='op'>%&gt;%</span> 
   
   <span class='fu'>add_formula</span><span class='op'>(</span><span class='va'>credit</span> <span class='op'>~</span> <span class='va'>.</span><span class='op'>)</span>
-
-
 <span class='co'># 모델 튜닝 with tune_grid()</span>
-
-
-
 <span class='co'># Tuning trees</span>
-
 <span class='fu'>tic</span><span class='op'>(</span><span class='op'>)</span>
-
 <span class='va'>tune_result</span> <span class='op'>&lt;-</span> <span class='va'>workflow</span> <span class='op'>%&gt;%</span> 
   
   <span class='fu'>tune_grid</span><span class='op'>(</span><span class='va'>validation_split</span>,
             grid <span class='op'>=</span> <span class='va'>param_grid</span>,
             metrics <span class='op'>=</span> <span class='fu'><a href='https://yardstick.tidymodels.org/reference/metric_set.html'>metric_set</a></span><span class='op'>(</span><span class='va'>mn_log_loss</span><span class='op'>)</span>,
             control <span class='op'>=</span> <span class='va'>ctrl_res</span><span class='op'>)</span>
-
 <span class='fu'>toc</span><span class='op'>(</span><span class='op'>)</span>
-
-
 <span class='va'>tune_result</span> <span class='op'>%&gt;%</span> 
   
   <span class='fu'>collect_metrics</span><span class='op'>(</span><span class='op'>)</span>
-
-
-
 <span class='co'># 튜닝결과 시각화</span>
-
 <span class='va'>tune_result</span> <span class='op'>%&gt;%</span>
   
   <span class='fu'>collect_metrics</span><span class='op'>(</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
@@ -2695,14 +2575,9 @@ code
   <span class='fu'>theme</span><span class='op'>(</span>legend.position <span class='op'>=</span> <span class='st'>"none"</span><span class='op'>)</span> <span class='op'>+</span>
   
   <span class='fu'>labs</span><span class='op'>(</span>title <span class='op'>=</span> <span class='st'>"Mean Log loss"</span><span class='op'>)</span>
-
-
-
 <span class='va'>tune_result</span> <span class='op'>%&gt;%</span> <span class='fu'>show_best</span><span class='op'>(</span><span class='op'>)</span>
 <span class='va'>tune_best</span> <span class='op'>&lt;-</span> <span class='va'>tune_result</span> <span class='op'>%&gt;%</span> <span class='fu'>select_best</span><span class='op'>(</span>metric <span class='op'>=</span> <span class='st'>"mn_log_loss"</span><span class='op'>)</span>
-
 <span class='va'>tune_best</span><span class='op'>$</span><span class='va'>mtry</span>
-
 <span class='va'>tune_best</span><span class='op'>$</span><span class='va'>min_n</span>
 </code></pre>
 </div>
@@ -2729,8 +2604,6 @@ code
              num.threads <span class='op'>=</span> <span class='va'>cores</span>, importance <span class='op'>=</span> <span class='st'>'impurity'</span><span class='op'>)</span> <span class='op'>%&gt;%</span> 
   
   <span class='fu'><a href='https://parsnip.tidymodels.org/reference/set_args.html'>set_mode</a></span><span class='op'>(</span><span class='st'>"classification"</span><span class='op'>)</span>
-
-
 <span class='va'>rf_model2</span> <span class='op'>&lt;-</span> 
   
   <span class='fu'><a href='https://parsnip.tidymodels.org/reference/rand_forest.html'>rand_forest</a></span><span class='op'>(</span>mtry <span class='op'>=</span> <span class='va'>tune_best</span><span class='op'>$</span><span class='va'>mtry</span>,
@@ -2744,7 +2617,6 @@ code
              num.threads <span class='op'>=</span> <span class='va'>cores</span>, importance <span class='op'>=</span> <span class='st'>'impurity'</span><span class='op'>)</span> <span class='op'>%&gt;%</span> 
   
   <span class='fu'><a href='https://parsnip.tidymodels.org/reference/set_args.html'>set_mode</a></span><span class='op'>(</span><span class='st'>"classification"</span><span class='op'>)</span>
-
 <span class='va'>rf_model3</span> <span class='op'>&lt;-</span> 
   
   <span class='fu'><a href='https://parsnip.tidymodels.org/reference/rand_forest.html'>rand_forest</a></span><span class='op'>(</span>mtry <span class='op'>=</span> <span class='va'>tune_best</span><span class='op'>$</span><span class='va'>mtry</span>,
@@ -2758,31 +2630,23 @@ code
              num.threads <span class='op'>=</span> <span class='va'>cores</span>, importance <span class='op'>=</span> <span class='st'>'impurity'</span><span class='op'>)</span> <span class='op'>%&gt;%</span> 
   
   <span class='fu'><a href='https://parsnip.tidymodels.org/reference/set_args.html'>set_mode</a></span><span class='op'>(</span><span class='st'>"classification"</span><span class='op'>)</span>
-
-
-
 <span class='fu'>tictoc</span><span class='fu'>::</span><span class='fu'>tic</span><span class='op'>(</span><span class='op'>)</span>
-
 <span class='va'>rf_fit</span> <span class='op'>&lt;-</span> 
   
   <span class='va'>rf_model</span> <span class='op'>%&gt;%</span> 
   
   <span class='fu'><a href='https://generics.r-lib.org/reference/fit.html'>fit</a></span><span class='op'>(</span><span class='va'>credit</span> <span class='op'>~</span> <span class='va'>.</span>, data <span class='op'>=</span> <span class='va'>train2</span><span class='op'>)</span>
-
 <span class='fu'>tictoc</span><span class='fu'>::</span><span class='fu'>toc</span><span class='op'>(</span><span class='op'>)</span>
-
 <span class='va'>rf_fit2</span> <span class='op'>&lt;-</span> 
   
   <span class='va'>rf_model2</span> <span class='op'>%&gt;%</span> 
   
   <span class='fu'><a href='https://generics.r-lib.org/reference/fit.html'>fit</a></span><span class='op'>(</span><span class='va'>credit</span> <span class='op'>~</span> <span class='va'>.</span>, data <span class='op'>=</span> <span class='va'>train2</span><span class='op'>)</span>
-
 <span class='va'>rf_fit3</span> <span class='op'>&lt;-</span> 
   
   <span class='va'>rf_model3</span> <span class='op'>%&gt;%</span> 
   
   <span class='fu'><a href='https://generics.r-lib.org/reference/fit.html'>fit</a></span><span class='op'>(</span><span class='va'>credit</span> <span class='op'>~</span> <span class='va'>.</span>, data <span class='op'>=</span> <span class='va'>train2</span><span class='op'>)</span>
-
 <span class='va'>rf_fit</span>
 <span class='va'>rf_fit2</span>
 <span class='va'>rf_fit3</span>
@@ -2812,23 +2676,19 @@ code
   <span class='fu'><a href='https://parsnip.tidymodels.org/reference/set_engine.html'>set_engine</a></span><span class='op'>(</span><span class='st'>"glmnet"</span><span class='op'>)</span><span class='op'>%&gt;%</span>
   <span class='fu'><a href='https://parsnip.tidymodels.org/reference/set_args.html'>set_mode</a></span><span class='op'>(</span><span class='st'>"classification"</span><span class='op'>)</span>
   
-
 <span class='va'>lambda_grid</span> <span class='op'>&lt;-</span> <span class='fu'>grid_regular</span><span class='op'>(</span><span class='fu'>penalty</span><span class='op'>(</span><span class='op'>)</span>, 
                             <span class='fu'>mixture</span><span class='op'>(</span><span class='op'>)</span>,
                             levels <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span>penalty <span class='op'>=</span> <span class='fl'>100</span>,
                                           mixture <span class='op'>=</span> <span class='fl'>25</span><span class='op'>)</span><span class='op'>)</span>
 <span class='va'>lambda_grid</span>
-
 <span class='va'>logit_workflow</span> <span class='op'>&lt;-</span><span class='fu'>workflow</span><span class='op'>(</span><span class='op'>)</span> <span class='op'>%&gt;%</span> 
   <span class='fu'>add_model</span><span class='op'>(</span><span class='va'>logit_spec</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
   <span class='fu'>add_formula</span><span class='op'>(</span><span class='va'>credit</span><span class='op'>~</span><span class='va'>.</span><span class='op'>)</span>
-
 <span class='va'>logit_result</span><span class='op'>&lt;-</span> <span class='va'>logit_workflow</span> <span class='op'>%&gt;%</span>
   <span class='fu'>tune_grid</span><span class='op'>(</span><span class='va'>validation_split</span>,
             grid<span class='op'>=</span><span class='va'>lambda_grid</span>,
             metrics <span class='op'>=</span> <span class='fu'><a href='https://yardstick.tidymodels.org/reference/metric_set.html'>metric_set</a></span><span class='op'>(</span><span class='va'>mn_log_loss</span><span class='op'>)</span>,
             control <span class='op'>=</span> <span class='va'>ctrl_res</span><span class='op'>)</span> 
-
 <span class='va'>logit_result</span> <span class='op'>%&gt;%</span> <span class='fu'>collect_metrics</span><span class='op'>(</span><span class='op'>)</span>
 <span class='va'>logit_result</span> <span class='op'>%&gt;%</span> <span class='fu'>show_best</span><span class='op'>(</span><span class='op'>)</span>
 </code></pre>
@@ -2845,15 +2705,12 @@ code
 <div class="sourceCode">
 <pre class="sourceCode r"><code class="sourceCode r"><span class='va'>logit_tune_best</span> <span class='op'>&lt;-</span> <span class='va'>logit_result</span> <span class='op'>%&gt;%</span> <span class='fu'>select_best</span><span class='op'>(</span>metric<span class='op'>=</span><span class='st'>"mn_log_loss"</span><span class='op'>)</span>
 <span class='va'>logit_tune_best</span><span class='op'>$</span><span class='va'>penalty</span>
-
 <span class='va'>logit_model</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://parsnip.tidymodels.org/reference/multinom_reg.html'>multinom_reg</a></span><span class='op'>(</span>penalty <span class='op'>=</span> <span class='va'>logit_tune_best</span><span class='op'>$</span><span class='va'>penalty</span>,
                   mixture <span class='op'>=</span> <span class='va'>logit_tune_best</span><span class='op'>$</span><span class='va'>mixture</span><span class='op'>)</span> <span class='op'>%&gt;%</span> 
                   <span class='fu'><a href='https://parsnip.tidymodels.org/reference/set_engine.html'>set_engine</a></span><span class='op'>(</span><span class='st'>"glmnet"</span>, seed <span class='op'>=</span> <span class='fl'>2022</span>, num.threads <span class='op'>=</span> <span class='va'>cores</span><span class='op'>)</span> <span class='op'>%&gt;%</span>            
                   <span class='fu'><a href='https://parsnip.tidymodels.org/reference/set_args.html'>set_mode</a></span><span class='op'>(</span><span class='st'>"classification"</span><span class='op'>)</span>
-
 <span class='va'>logit_fit</span> <span class='op'>&lt;-</span> <span class='va'>logit_model</span> <span class='op'>%&gt;%</span> <span class='fu'><a href='https://generics.r-lib.org/reference/fit.html'>fit</a></span><span class='op'>(</span><span class='va'>credit</span><span class='op'>~</span><span class='va'>.</span>, data <span class='op'>=</span> <span class='va'>train2</span><span class='op'>)</span>
 <span class='va'>logit_fit</span>
-
 <span class='va'>logit_pred</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/predict.html'>predict</a></span><span class='op'>(</span><span class='va'>logit_fit</span>, <span class='va'>test2</span>, type<span class='op'>=</span><span class='st'>"prob"</span><span class='op'>)</span>
 <span class='va'>logit_pred</span>
 </code></pre>
@@ -2884,13 +2741,7 @@ code
   <span class='fu'><a href='https://parsnip.tidymodels.org/reference/set_engine.html'>set_engine</a></span><span class='op'>(</span><span class='st'>"xgboost"</span><span class='op'>)</span> <span class='op'>%&gt;%</span> 
   
   <span class='fu'><a href='https://parsnip.tidymodels.org/reference/set_args.html'>set_mode</a></span><span class='op'>(</span><span class='st'>"classification"</span><span class='op'>)</span>
-
-
-
 <span class='va'>xgb_spec</span>
-
-
-
 <span class='va'>xgb_grid</span> <span class='op'>&lt;-</span> <span class='fu'>grid_latin_hypercube</span><span class='op'>(</span>
   
   <span class='fu'>tree_depth</span><span class='op'>(</span><span class='op'>)</span>,
@@ -2906,27 +2757,18 @@ code
   size <span class='op'>=</span> <span class='fl'>100</span>
   
 <span class='op'>)</span>
-
-
 <span class='va'>xgb_grid</span>
-
-
-
 <span class='va'>xgb_workflow</span> <span class='op'>&lt;-</span> <span class='fu'>workflow</span><span class='op'>(</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
     <span class='fu'>add_model</span><span class='op'>(</span><span class='va'>xgb_spec</span><span class='op'>)</span> <span class='op'>%&gt;%</span> 
     <span class='fu'>add_formula</span><span class='op'>(</span><span class='va'>credit</span> <span class='op'>~</span> <span class='va'>.</span><span class='op'>)</span>
-
-
 <span class='va'>xgb_result</span><span class='op'>&lt;-</span> <span class='va'>xgb_workflow</span> <span class='op'>%&gt;%</span>
   
   <span class='fu'>tune_grid</span><span class='op'>(</span><span class='va'>validation_split</span>,
             grid<span class='op'>=</span><span class='va'>xgb_grid</span>,
             metrics <span class='op'>=</span> <span class='fu'><a href='https://yardstick.tidymodels.org/reference/metric_set.html'>metric_set</a></span><span class='op'>(</span><span class='va'>mn_log_loss</span><span class='op'>)</span>,
             control <span class='op'>=</span> <span class='va'>ctrl_res</span><span class='op'>)</span> 
-
 <span class='va'>xgb_result</span> <span class='op'>%&gt;%</span> <span class='fu'>collect_metrics</span><span class='op'>(</span><span class='op'>)</span>
 <span class='va'>xgb_result</span> <span class='op'>%&gt;%</span> <span class='fu'>show_best</span><span class='op'>(</span><span class='op'>)</span>
-
 <span class='va'>xgb_tune_best</span> <span class='op'>&lt;-</span> <span class='va'>xgb_result</span> <span class='op'>%&gt;%</span> <span class='fu'>select_best</span><span class='op'>(</span>metric<span class='op'>=</span><span class='st'>"mn_log_loss"</span><span class='op'>)</span>
 </code></pre>
 </div>
@@ -2949,11 +2791,8 @@ code
   <span class='op'>)</span> <span class='op'>%&gt;%</span> 
   <span class='fu'><a href='https://parsnip.tidymodels.org/reference/set_engine.html'>set_engine</a></span><span class='op'>(</span><span class='st'>"xgboost"</span><span class='op'>)</span> <span class='op'>%&gt;%</span> 
   <span class='fu'><a href='https://parsnip.tidymodels.org/reference/set_args.html'>set_mode</a></span><span class='op'>(</span><span class='st'>"classification"</span><span class='op'>)</span>
-
 <span class='va'>xgb_fit</span> <span class='op'>&lt;-</span> 
     <span class='va'>xgb_model</span> <span class='op'>%&gt;%</span> <span class='fu'><a href='https://generics.r-lib.org/reference/fit.html'>fit</a></span><span class='op'>(</span><span class='va'>credit</span> <span class='op'>~</span> <span class='va'>.</span>, data <span class='op'>=</span> <span class='va'>train2</span><span class='op'>)</span>
-
-
 <span class='va'>xgb_fit</span>
 </code></pre>
 </div>
@@ -2983,7 +2822,6 @@ code
   <span class='fu'><a href='https://parsnip.tidymodels.org/reference/set_engine.html'>set_engine</a></span><span class='op'>(</span><span class='st'>"lightgbm"</span><span class='op'>)</span> <span class='op'>%&gt;%</span> 
   
   <span class='fu'><a href='https://parsnip.tidymodels.org/reference/set_args.html'>set_mode</a></span><span class='op'>(</span><span class='st'>"classification"</span><span class='op'>)</span>
-
 <span class='va'>gbm_spec</span>
 <span class='va'>gbm_grid</span> <span class='op'>&lt;-</span> <span class='fu'>grid_latin_hypercube</span><span class='op'>(</span>
   
@@ -3001,30 +2839,19 @@ code
   
   size <span class='op'>=</span> <span class='fl'>100</span> 
 <span class='op'>)</span>
-
-
 <span class='va'>gbm_grid</span>
-
-
 <span class='va'>gbm_workflow</span> <span class='op'>&lt;-</span> <span class='fu'>workflow</span><span class='op'>(</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
   <span class='fu'>add_model</span><span class='op'>(</span><span class='va'>gbm_spec</span><span class='op'>)</span> <span class='op'>%&gt;%</span> 
   <span class='fu'>add_formula</span><span class='op'>(</span><span class='va'>credit</span> <span class='op'>~</span> <span class='va'>.</span><span class='op'>)</span>
-
-
 <span class='fu'>tic</span><span class='op'>(</span><span class='op'>)</span>
-
 <span class='va'>gbm_result</span><span class='op'>&lt;-</span> <span class='va'>gbm_workflow</span> <span class='op'>%&gt;%</span>
     <span class='fu'>tune_grid</span><span class='op'>(</span><span class='va'>validation_split</span>,
             grid<span class='op'>=</span><span class='va'>gbm_grid</span>,
             metrics <span class='op'>=</span> <span class='fu'><a href='https://yardstick.tidymodels.org/reference/metric_set.html'>metric_set</a></span><span class='op'>(</span><span class='va'>mn_log_loss</span><span class='op'>)</span>,
             control <span class='op'>=</span> <span class='va'>ctrl_res</span><span class='op'>)</span> 
-
 <span class='fu'>toc</span><span class='op'>(</span><span class='op'>)</span>
-
-
 <span class='va'>gbm_result</span> <span class='op'>%&gt;%</span> <span class='fu'>collect_metrics</span><span class='op'>(</span><span class='op'>)</span>
 <span class='va'>gbm_result</span> <span class='op'>%&gt;%</span> <span class='fu'>show_best</span><span class='op'>(</span><span class='op'>)</span>
-
 <span class='va'>gbm_tune_best</span> <span class='op'>&lt;-</span> <span class='va'>gbm_result</span> <span class='op'>%&gt;%</span> <span class='fu'>select_best</span><span class='op'>(</span>metric<span class='op'>=</span><span class='st'>"mn_log_loss"</span><span class='op'>)</span>
 </code></pre>
 </div>
@@ -3037,23 +2864,19 @@ code
 code
 </summary>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="sc">**</span>파라미터 튜닝을 좀 더 하면 유의미한 결과가 나올거 같다.<span class="sc">**</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>gbm_model <span class="ot">&lt;-</span> <span class="fu">boost_tree</span>(</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">trees =</span> <span class="dv">1000</span>, </span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">tree_depth =</span> gbm_tune_best<span class="sc">$</span>tree_depth, </span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">min_n =</span> gbm_tune_best<span class="sc">$</span>min_n, </span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">loss_reduction =</span> gbm_tune_best<span class="sc">$</span>loss_reduction,<span class="do">## first three: model complexity</span></span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">sample_size =</span> gbm_tune_best<span class="sc">$</span>sample_size, <span class="at">mtry =</span> gbm_tune_best<span class="sc">$</span>mtry,         <span class="do">## randomness</span></span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">learn_rate =</span> gbm_tune_best<span class="sc">$</span>learn_rate,                         <span class="do">## step size</span></span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>) <span class="sc">%&gt;%</span> </span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_engine</span>(<span class="st">&quot;lightgbm&quot;</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_mode</span>(<span class="st">&quot;classification&quot;</span>)</span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>gbm_fit <span class="ot">&lt;-</span> </span>
-<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>  gbm_model <span class="sc">%&gt;%</span> <span class="fu">fit</span>(credit <span class="sc">~</span> ., <span class="at">data =</span> train2)</span>
-<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>gbm_fit</span></code></pre></div>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>gbm_model <span class="ot">&lt;-</span> <span class="fu">boost_tree</span>(</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">trees =</span> <span class="dv">1000</span>, </span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">tree_depth =</span> gbm_tune_best<span class="sc">$</span>tree_depth, </span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">min_n =</span> gbm_tune_best<span class="sc">$</span>min_n, </span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">loss_reduction =</span> gbm_tune_best<span class="sc">$</span>loss_reduction,<span class="do">## first three: model complexity</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">sample_size =</span> gbm_tune_best<span class="sc">$</span>sample_size, <span class="at">mtry =</span> gbm_tune_best<span class="sc">$</span>mtry,         <span class="do">## randomness</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">learn_rate =</span> gbm_tune_best<span class="sc">$</span>learn_rate,                         <span class="do">## step size</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>) <span class="sc">%&gt;%</span> </span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_engine</span>(<span class="st">&quot;lightgbm&quot;</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_mode</span>(<span class="st">&quot;classification&quot;</span>)</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>gbm_fit <span class="ot">&lt;-</span> </span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>  gbm_model <span class="sc">%&gt;%</span> <span class="fu">fit</span>(credit <span class="sc">~</span> ., <span class="at">data =</span> train2)</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>gbm_fit</span></code></pre></div>
 </details>
 </div>
 <h1 id="stacking-을-실행해보자.">Stacking 을 실행해보자.</h1>
@@ -3069,49 +2892,39 @@ code
 <span class='va'>lambda_grid</span> <span class='op'>&lt;-</span> <span class='fu'>tibble</span><span class='op'>(</span>mixture<span class='op'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>0.1</span><span class='op'>)</span>,penalty<span class='op'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>0.0087</span><span class='op'>)</span><span class='op'>)</span>
 <span class='va'>xgb_grid</span> <span class='op'>&lt;-</span> <span class='fu'>tibble</span><span class='op'>(</span>mtry<span class='op'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>3</span>,<span class='fl'>3</span><span class='op'>)</span>,min_n<span class='op'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>13</span>,<span class='fl'>4</span><span class='op'>)</span>,tree_depth<span class='op'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>13</span>,<span class='fl'>11</span><span class='op'>)</span>,learn_rate<span class='op'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>0.126</span>,<span class='fl'>0.11</span><span class='op'>)</span>,loss_reduction<span class='op'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>1.19</span>,<span class='fl'>1.11</span><span class='op'>)</span>,sample_size<span class='op'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>0.983</span>,<span class='fl'>0.891</span><span class='op'>)</span><span class='op'>)</span>
 <span class='va'>gbm_grid</span> <span class='op'>&lt;-</span> <span class='fu'>tibble</span><span class='op'>(</span>mtry<span class='op'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>8</span>,<span class='fl'>9</span><span class='op'>)</span>,min_n<span class='op'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>6</span>,<span class='fl'>11</span><span class='op'>)</span>,tree_depth<span class='op'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>15</span>,<span class='fl'>15</span><span class='op'>)</span>,learn_rate<span class='op'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>0.124</span>,<span class='fl'>0.169</span><span class='op'>)</span>,loss_reduction<span class='op'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>0.242</span>,<span class='fl'>0.148</span><span class='op'>)</span>,sample_size<span class='op'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>0.675</span>,<span class='fl'>0.664</span><span class='op'>)</span><span class='op'>)</span>
-
 <span class='fu'>tic</span><span class='op'>(</span><span class='op'>)</span>
 <span class='va'>tune_result</span> <span class='op'>&lt;-</span> <span class='va'>workflow</span> <span class='op'>%&gt;%</span> 
   <span class='fu'>tune_grid</span><span class='op'>(</span><span class='va'>validation_split</span>,
             grid <span class='op'>=</span> <span class='va'>param_grid</span>,
             metrics <span class='op'>=</span> <span class='fu'><a href='https://yardstick.tidymodels.org/reference/metric_set.html'>metric_set</a></span><span class='op'>(</span><span class='va'>mn_log_loss</span><span class='op'>)</span>,
             control <span class='op'>=</span> <span class='va'>ctrl_res</span><span class='op'>)</span>
-
 <span class='va'>logit_result</span><span class='op'>&lt;-</span> <span class='va'>logit_workflow</span> <span class='op'>%&gt;%</span>
   <span class='fu'>tune_grid</span><span class='op'>(</span><span class='va'>validation_split</span>,
             grid<span class='op'>=</span><span class='va'>lambda_grid</span>,
             metrics <span class='op'>=</span> <span class='fu'><a href='https://yardstick.tidymodels.org/reference/metric_set.html'>metric_set</a></span><span class='op'>(</span><span class='va'>mn_log_loss</span><span class='op'>)</span>,
             control <span class='op'>=</span> <span class='va'>ctrl_res</span><span class='op'>)</span> 
-
 <span class='va'>xgb_result</span><span class='op'>&lt;-</span> <span class='va'>xgb_workflow</span> <span class='op'>%&gt;%</span>
   <span class='fu'>tune_grid</span><span class='op'>(</span><span class='va'>validation_split</span>,
             grid<span class='op'>=</span><span class='va'>xgb_grid</span>,
             metrics <span class='op'>=</span> <span class='fu'><a href='https://yardstick.tidymodels.org/reference/metric_set.html'>metric_set</a></span><span class='op'>(</span><span class='va'>mn_log_loss</span><span class='op'>)</span>,
             control <span class='op'>=</span> <span class='va'>ctrl_res</span><span class='op'>)</span> 
-
 <span class='va'>gbm_result</span><span class='op'>&lt;-</span> <span class='va'>gbm_workflow</span> <span class='op'>%&gt;%</span>
   <span class='fu'>tune_grid</span><span class='op'>(</span><span class='va'>validation_split</span>,
             grid<span class='op'>=</span><span class='va'>gbm_grid</span>,
             metrics <span class='op'>=</span> <span class='fu'><a href='https://yardstick.tidymodels.org/reference/metric_set.html'>metric_set</a></span><span class='op'>(</span><span class='va'>mn_log_loss</span><span class='op'>)</span>,
             control <span class='op'>=</span> <span class='va'>ctrl_res</span><span class='op'>)</span> 
 <span class='fu'>toc</span><span class='op'>(</span><span class='op'>)</span>
-
 <span class='va'>credit_stacking</span> <span class='op'>&lt;-</span> 
   <span class='fu'>stacks</span><span class='op'>(</span><span class='op'>)</span> <span class='op'>%&gt;%</span> 
   <span class='fu'>add_candidates</span><span class='op'>(</span><span class='va'>tune_result</span><span class='op'>)</span> <span class='op'>%&gt;%</span> 
   <span class='fu'>add_candidates</span><span class='op'>(</span><span class='va'>logit_result</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
   <span class='fu'>add_candidates</span><span class='op'>(</span><span class='va'>xgb_result</span><span class='op'>)</span>  <span class='op'>%&gt;%</span>
   <span class='fu'>add_candidates</span><span class='op'>(</span><span class='va'>gbm_result</span><span class='op'>)</span>
-
 <span class='va'>credit_stacking</span>
 <span class='fu'>as_tibble</span><span class='op'>(</span><span class='va'>credit_stacking</span><span class='op'>)</span>
-
 <span class='va'>stacking_model</span> <span class='op'>&lt;-</span> <span class='va'>credit_stacking</span> <span class='op'>%&gt;%</span> <span class='fu'>blend_predictions</span><span class='op'>(</span><span class='op'>)</span> <span class='op'>%&gt;%</span> <span class='fu'>fit_members</span><span class='op'>(</span><span class='op'>)</span> 
-
 <span class='va'>stacking_model</span>
-
 <span class='va'>final_result</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/predict.html'>predict</a></span><span class='op'>(</span><span class='va'>stacking_model</span>, <span class='va'>test2</span>,type <span class='op'>=</span> <span class='st'>"prob"</span><span class='op'>)</span>
-
 <span class='va'>final_result</span>
 </code></pre>
 </div>
@@ -3126,34 +2939,22 @@ code
 <div class="sourceCode">
 <pre class="sourceCode r"><code class="sourceCode r"><span class='va'>result1</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/predict.html'>predict</a></span><span class='op'>(</span><span class='va'>rf_fit</span>, <span class='va'>test2</span>, type <span class='op'>=</span> <span class='st'>"prob"</span><span class='op'>)</span>
 <span class='va'>result1</span> <span class='op'>%&gt;%</span> <span class='fu'><a href='https://rdrr.io/r/utils/head.html'>head</a></span><span class='op'>(</span><span class='op'>)</span>
-
 <span class='va'>result2</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/predict.html'>predict</a></span><span class='op'>(</span><span class='va'>rf_fit2</span>, <span class='va'>test2</span>, type <span class='op'>=</span> <span class='st'>"prob"</span><span class='op'>)</span>
 <span class='va'>result2</span> <span class='op'>%&gt;%</span> <span class='fu'><a href='https://rdrr.io/r/utils/head.html'>head</a></span><span class='op'>(</span><span class='op'>)</span>
-
 <span class='va'>result3</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/predict.html'>predict</a></span><span class='op'>(</span><span class='va'>rf_fit3</span>, <span class='va'>test2</span>, type <span class='op'>=</span> <span class='st'>"prob"</span><span class='op'>)</span>
 <span class='va'>result3</span> <span class='op'>%&gt;%</span> <span class='fu'><a href='https://rdrr.io/r/utils/head.html'>head</a></span><span class='op'>(</span><span class='op'>)</span>
-
 <span class='va'>result4</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/predict.html'>predict</a></span><span class='op'>(</span><span class='va'>xgb_fit</span>, <span class='va'>test2</span>, type <span class='op'>=</span> <span class='st'>"prob"</span><span class='op'>)</span>
 <span class='va'>result4</span> <span class='op'>%&gt;%</span> <span class='fu'><a href='https://rdrr.io/r/utils/head.html'>head</a></span><span class='op'>(</span><span class='op'>)</span>
-
 <span class='va'>result5</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/predict.html'>predict</a></span><span class='op'>(</span><span class='va'>gbm_fit</span>, <span class='va'>test2</span>, type <span class='op'>=</span> <span class='st'>"prob"</span><span class='op'>)</span>
 <span class='va'>result5</span> <span class='op'>%&gt;%</span> <span class='fu'><a href='https://rdrr.io/r/utils/head.html'>head</a></span><span class='op'>(</span><span class='op'>)</span>
-
-
 <span class='va'>result</span><span class='op'>&lt;-</span><span class='op'>(</span><span class='va'>result1</span><span class='op'>+</span><span class='va'>result2</span><span class='op'>+</span><span class='va'>result3</span><span class='op'>)</span><span class='op'>/</span><span class='fl'>3</span>
 <span class='va'>result</span> <span class='op'>%&gt;%</span> <span class='fu'><a href='https://rdrr.io/r/utils/head.html'>head</a></span><span class='op'>(</span><span class='op'>)</span>
-
 <span class='va'>softresult</span><span class='op'>&lt;-</span> <span class='op'>(</span><span class='va'>result3</span><span class='op'>+</span><span class='va'>logit_pred</span><span class='op'>)</span><span class='op'>/</span><span class='fl'>2</span>
 <span class='va'>softresult</span> <span class='op'>%&gt;%</span> <span class='fu'><a href='https://rdrr.io/r/utils/head.html'>head</a></span><span class='op'>(</span><span class='op'>)</span>
-
 <span class='va'>submission</span> <span class='op'>&lt;-</span> <span class='fu'>read_csv</span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/file.path.html'>file.path</a></span><span class='op'>(</span><span class='va'>file_path</span>, <span class='st'>"sample_submission.csv"</span><span class='op'>)</span><span class='op'>)</span>
-
 <span class='va'>sub_col</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/names.html'>names</a></span><span class='op'>(</span><span class='va'>submission</span><span class='op'>)</span>
-
 <span class='va'>submission</span> <span class='op'>&lt;-</span> <span class='fu'>bind_cols</span><span class='op'>(</span><span class='va'>submission</span><span class='op'>$</span><span class='va'>index</span>, <span class='va'>final_result</span><span class='op'>)</span>
-
 <span class='fu'><a href='https://rdrr.io/r/base/names.html'>names</a></span><span class='op'>(</span><span class='va'>submission</span><span class='op'>)</span> <span class='op'>&lt;-</span> <span class='va'>sub_col</span>
-
 <span class='fu'><a href='https://rdrr.io/r/utils/write.table.html'>write.csv</a></span><span class='op'>(</span><span class='va'>submission</span>, row.names <span class='op'>=</span> <span class='cn'>FALSE</span>,
           
           <span class='st'>"rammon33.csv"</span><span class='op'>)</span>
